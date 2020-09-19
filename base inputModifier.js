@@ -708,7 +708,7 @@ const possibleStarts=[
 ]  
 
 function isNullOrWhitespace( input ) {
-
+// taken from https://gist.github.com/pinalbhatt/d7cb74b2ecdb0cbc9705
     if (typeof input === 'undefined' || input == null) return true;
 
     return input.replace(/\s/g, '').length < 1;
