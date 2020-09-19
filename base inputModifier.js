@@ -1,5 +1,8 @@
   
-// Part of this script were taken from script published by other people. Since I'm dumb, I don't remember their name
+// Part of this script were taken from script published by other people. 
+// The base structure of the command manager was taken from Zynj: https://github.com/Zynj-git/AIDungeon/blob/master/AID-Script-Examples/commandManager/input/commandManager.js
+// Some code snippets were taken from cantino (the official AID scripting help): https://github.com/AIDungeon/Scripting
+
 // Feel free to copy, use, alter etc.
 // Use those scripts in play on the scenario at this adress: https://play.aidungeon.io/main/scenarioView?publicId=82abe130-f6b4-11ea-a1ae-2f8f54760f13
 
