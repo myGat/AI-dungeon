@@ -36,7 +36,7 @@ const defaultNote = ''
 const defaultBack = ''
 const defaultFront = ""
 const verbosity = 1 //not really implemented... x) Although I've put a condition "verbosity >= 0" for bug messages: bugs should always be reported and ask the user to copy the error in comment even with no verbosity
-const version = "gatScript v1.11.7\n"
+const version = "gatScript v1.12\n"
 
 const prefix = "/"
 const optionPrefix = "-"
