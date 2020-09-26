@@ -15,7 +15,7 @@ This require node.js (an extension of js intended to create servers). Even if yo
 version, you'll need node.js: vanilla js can't read or write file (and that's necessary to concatenate files).
 
 
-# Disclamer (important)
+# Disclaimer (important)
 
 I am in no way a js specialist, and even less a server specialist. The server created by the localServer.js script 
 has probabibly some security issue... 
