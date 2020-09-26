@@ -15,12 +15,12 @@ This require node.js (an extension of js intended to create servers). Even if yo
 version, you'll need node.js: vanilla js can't read or write file (and that's necessary to concatenate files).
 
 
-# Discalmer (important)
+# Disclamer (important)
 
 I am in no way a js specialist, and even less a server specialist. The server created by the localServer.js script 
 has probabibly some security issue... 
 
-/!\ If you can't understand the localServer.js script, you shouldn't use it and use only the offlineVersion.js. Or maybe not use my work at all. /!\
+/!\ If you can't understand the localServer.js script, you shouldn't use it and use only the offlineVersion.js. Or maybe you should not use my work at all. /!\
 
 Use my work at your own risk.
 
