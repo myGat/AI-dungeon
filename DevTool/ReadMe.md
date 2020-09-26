@@ -82,3 +82,18 @@ to re-create the script, then re-actualize index.html in your browser.
 files and copy/paste their content in the corresponding scripts on AID.
 
 - You're done!
+
+
+# TODO (...Maybe one day)
+
+In the debug site:
+
+- spinbox to set the info.actionCount
+
+- spinbox to set info.maxChars (it's easier to test if the context modifier cuts text properly if info.maxChars is low)
+
+- emulate the memory box.
+
+- emulate the author's note box.
+
+- emulate world infos...
