@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>My test page</title>
+
+  </head>
+  <body>
+    <h1>Create and test scripts</h1>
+    <form>
+      <fieldset>
+        <legend>Inputs</legend>
+        <p>
+            <label for="inputText" >Input text (created by user):</label>
+            <br />
+            <textarea id="inputText" rows="2" cols="100" >do some stuff.</textarea>
+            <br />
+            
+            <label for="baseModifier">With option:</label>
+            <select id="baseModifier" name="baseModifier">
+              <option value="none">None (story)</option>
+              <option value="do">Do</option>
+              <option value="say">Say</option>
+            </select>
+        </p>
+
+        <p>
+            <label for="outputText">Output text (send by AI):</label>
+            <br />
+            <textarea id = "outputText" rows = "2" cols = "100">You fail miserably and ridiculously.</textarea>
+        </p>
+
+        <p>
+            <label for="state">state object:</label>
+            <br />
+            <textarea id="state" rows="2" cols="100">{}</textarea>
+            <br />
+
+            <input type="checkbox" id="useUserState" name="useUserState" value="useUserState">
+            <label for="useUserState">Use this state? (If not checked, it wil use the state in memory - displayed in the final state object box.)</label>
+        </p>
+
+        <p>
+            <label for="historyText">history:</label>
+            <br />
+            <textarea id = "historyText" rows = "3" cols = "100">History line 1.
+History line 2.
+History line 3.</textarea>
+        </p>
+
+      </fieldset>
+      
+      <fieldset>
+        <legend>Run! Note: as in AID, the Input Modifier won't run if there's no input text.</legend>
+        <p>
+            <p>
+                <button type="button" onclick="pageBehavior.runInput()">Run inputModifier on input text</button>
+                <button type="button" onclick="pageBehavior.runContext()">Run contextModifier on history</button>
+                <button type="button" onclick="pageBehavior.runOutput()">Run outputModifier on ouput text</button>
+            </p><p></p>
+                <button type="button" onclick="pageBehavior.runInputContext()">Run inputModifier then contextModifier</button>
+                <button type="button" onclick="pageBehavior.runInputContextOutput()">Run inputModifier then contextModifier then outputModifier</button>
+            </p>
+    
+        </p>
+      </fieldset>
+      
+      <fieldset>
+        <legend>Ouputs:</legend>
+        <p>
+            <label for="finalText">Final text (readonly):</label>
+            <br />
+            <textarea readonly id="finalText" rows="6" cols="100"></textarea>
+            <br />
+        <p></p>
+            <label for="finalState">final state object (readonly):</label>
+            <br />
+            <textarea readonly id="finalState" rows="2" cols="100">{}</textarea>
+            <br />
+        <p></p>
+        <label for="AItext">Text sent to the AI (readonly):</label>
+        <br />
+        <textarea readonly id="AItext" rows="5" cols="100">{}</textarea>
+        <br />
+    <p>
+      </fieldset>
+    </form>
+  
+  </body>
+
+  <script src="final script (generated).js"></script>
+  <script src="pageScript.js"></script>
+</html> 
