@@ -86,7 +86,11 @@ files and copy/paste their content in the corresponding scripts on AID.
 
 # TODO (...Maybe one day)
 
-In the debug site:
+In the debug page:
+
+- handle the quests object
+
+- emulate the way state.memory.frontMemory, state.memory.context and state.memory.authorsNote are used to create the text sent to the context modifier
 
 - spinbox to set the info.actionCount
 
