@@ -73,7 +73,7 @@ function createOutputModScript(){
 }
 
 function createFinalScript(){
-    fs.writeFileSync(finalScript, "var state = {memory: {}}\nvar info={actionCount:0}\nvar worldEntries = []\n")
+    fs.writeFileSync(finalScript, "var state = {memory: {}}\nvar info={actionCount:0}\nvar worldEntries = []\nvar quests = []\n")
     fs.appendFileSync(finalScript, fs.readFileSync(generatedSharedLibrary))
     fs.appendFileSync(finalScript, "\nfunction InputModifier(text) {\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedInputMod))
