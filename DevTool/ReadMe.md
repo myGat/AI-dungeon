@@ -88,9 +88,9 @@ files and copy/paste their content in the corresponding scripts on AID.
 
 In the debug page:
 
-- handle the quests object
+- handle the quests object (done)
 
-- emulate the way state.memory.frontMemory, state.memory.context and state.memory.authorsNote are used to create the text sent to the context modifier
+- emulate the way state.memory.frontMemory, state.memory.context and state.memory.authorsNote are used to create the text sent to the context modifier (done)
 
 - spinbox to set the info.actionCount
 
@@ -99,5 +99,7 @@ In the debug page:
 - emulate the memory box.
 
 - emulate the author's note box.
+
+- emulate suest system.
 
 - emulate world infos...
