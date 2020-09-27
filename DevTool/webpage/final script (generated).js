@@ -1,6 +1,7 @@
 var state = {memory: {}}
 var info={actionCount:0}
 var worldEntries = []
+var quests = []
 function kingModifier(text){
     let modifiedText = text
     const lowered = text.toLowerCase()

@@ -23,7 +23,8 @@ pageBehavior.runInput = () => {
 pageBehavior.runContext = () => {
     pageBehavior.updateState(true)
 
-    var text = pageBehavior.getHistoryText()
+    //var text = pageBehavior.getHistoryText()
+    var text = pageBehavior.createContextText("")
     
     var sentText = ContextModifier(text)
     
@@ -56,8 +57,10 @@ pageBehavior.runInputContext = () => {
 
     pageBehavior.updateState(false)
 
+    var sentText = pageBehavior.createContextText(text)
+    sentText = ContextModifier(sentText)
+
     text = `${pageBehavior.getHistoryText()}\n${text}`
-    var sentText = ContextModifier(text)
     
     pageBehavior.writeText(text)
     pageBehavior.writeSentText(sentText)
@@ -74,8 +77,10 @@ pageBehavior.runInputContextOutput = () => {
 
     pageBehavior.updateState(false)
 
+    var sentText = pageBehavior.createContextText(text)
+    sentText = ContextModifier(sentText)
+
     text = `${pageBehavior.getHistoryText()}\n${text}`
-    var sentText = ContextModifier(text)
 
     pageBehavior.updateState(false)
 
@@ -152,6 +157,39 @@ pageBehavior.getHistoryText = () => {
 
 pageBehavior.getOutputText = () => {
     return document.getElementById("outputText").value
+}
+
+pageBehavior.createContextText = (text) => {
+    //receive text modified by inputmod
+    //send full context
+    var memory = ""
+    if (!state.memory.context){
+        info.nemoryLength = 0 
+    }else if (pageBehavior.isNullOrWhitespace(state.memory.context)){
+        info.nemoryLength = 0 
+    }else{
+        memory = state.memory.context.endsWith("\n") ? state.memory.context : state.memory.context+"\n"
+        info.nemoryLength = memory.length
+    }
+
+    var history = pageBehavior.getHistoryText()
+    const lines = history.split("\n")
+    if (state.memory.authorsNote && lines.length > 2)
+    {
+        lines.splice(-3, 0, `[Author's note: ${state.memory.authorsNote}]`)
+    }
+    
+    if(state.memory.frontMemory)
+    {
+        text = (text.endsWith("\n") || state.memory.frontMemory.startsWith("\n")) ?
+                `${text}${state.memory.frontMemory}` :
+                `${text}\n${state.memory.frontMemory}` 
+    }
+
+    history = `${lines.join("\n")}\n${text}`.slice(-(info.maxChars - info.memoryLength))
+    
+    return [memory, history].join("")
+
 }
 
 pageBehavior.writeState = () => {
