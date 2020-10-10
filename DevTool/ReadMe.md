@@ -99,10 +99,8 @@ Eg :
 # changelog
 
 - 10/10/20 
-
--- Handle several projects
-
--- better emulation of AID: now the shared library is copied in the three modifier, 
+    - Handle several projects
+    - better emulation of AID: now the shared library is copied in the three modifier, 
 hence it's hidden from the outside and it can't be used to save stuff outside of the state.
 
 
