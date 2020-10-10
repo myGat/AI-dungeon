@@ -25,7 +25,10 @@ has probabibly some security issue...
 Use my work at your own risk.
 
 
-# Server version
+# Usage
+
+
+## Server version
 
 - create a new working directory. 
 
@@ -57,7 +60,7 @@ files and copy/paste their content in the corresponding scripts on AID.
 - You're done!
 
 
-# No-server version
+## No-server version
 
 - create a new working directory. 
 
@@ -82,7 +85,7 @@ files and copy/paste their content in the corresponding scripts on AID.
 - You're done!
 
 
-# Handle several projects
+## Handle several projects
 
 When you call node with the terminal, there's a second optional argument: if you give it a folder name, 
 the script will search for the buildFile.json file in this folder, and create in this folder a subfolder 
@@ -96,7 +99,7 @@ Eg :
 - node offlineVersion.js "my subfolder"
 
 
-# changelog
+# Changelog
 
 - 10/10/20 
     - Handle several projects
