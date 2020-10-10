@@ -3,7 +3,7 @@ This is a tool helping you to create and debug scripts for AID.
 - It allows to concatenate several file to create the 4 files you can copy/paste on AID 
 (the shared library, the input modifier, the context modifier and the output modifer)
 
-- Then it create a webpage you can open on your computer to test and the scripts. 
+- Then it create a webpage you can open on your computer to test and debug the scripts. 
 This allows you to make some basic debug, and correct the bugs directly on your local computer -
 instead of correcting on AID and then backcopy the corrections on your local computer.
 
@@ -31,9 +31,8 @@ Use my work at your own risk.
 
 - copy localServer.js and ScriptGenerator.js on your working directory. Copy the folder 'webpage' with its content in your working directory.
 
-- open scriptGenerator.js: the first object is buildFiles = 
-{sharedLiraryFiles: [a list of file name], inputModFiles: [a list of file name], contextModFiles: [a list of file name], outputModFiles: [a list of file name]}.
-those are the list of files that will be concatenated to create the 4 scripts. Modify those list to suit your need. Note: the default values use files given here 
+- open buildFiles.json: it's a json file with the lists sharedLiraryFiles, inputModFiles, contextModFiles, and outputModFiles.
+those are the list of files that will be concatenated to create the 4 scripts. Modify those lists to suit your need. Note: the default values use files given here 
 in the templates and examples folders to show how it works. 
 
 - open a terminal in your working directory (if you use Visual Studio Code, you have a terminal at the bottom of the window). 
@@ -64,8 +63,7 @@ files and copy/paste their content in the corresponding scripts on AID.
 
 - copy offlineVersion.js and ScriptGenerator.js on your working directory. Copy the folder 'webpage' with its content in your working directory.
 
-- open scriptGenerator.js: the first object is buildFiles = 
-{sharedLiraryFiles: [a list of file name], inputModFiles: [a list of file name], contextModFiles: [a list of file name], outputModFiles: [a list of file name]}.
+- open buildFiles.json: it's a json file with the lists sharedLiraryFiles, inputModFiles, contextModFiles, and outputModFiles.
 those are the list of files that will be concatenated to create the 4 scripts. Modify those list to suit your need. Note: the default values use files given here 
 in the templates and examples folders to show how it works. 
 
@@ -84,6 +82,30 @@ files and copy/paste their content in the corresponding scripts on AID.
 - You're done!
 
 
+# Handle several projects
+
+When you call node with the terminal, there's a second optional argument: if you give it a folder name, 
+the script will search for the buildFile.json file in this folder, and create in this folder a subfolder 
+"generated scripts" to put the generated scripts. This allow you to work in separate folders, with different
+fils to concatenate, and without destroying the generated scripts for this project.
+
+Eg : 
+
+- node localServer.js "my subfolder"
+
+- node offlineVersion.js "my subfolder"
+
+
+# changelog
+
+- 10/10/20 
+
+-- Handle several projects
+
+-- better emulation of AID: now the shared library is copied in the three modifier, 
+hence it's hidden from the outside and it can't be used to save stuff outside of the state.
+
+
 # TODO (...Maybe one day)
 
 In the debug page:
@@ -100,6 +122,6 @@ In the debug page:
 
 - emulate the author's note box.
 
-- emulate suest system.
+- emulate quest system.
 
 - emulate world infos...
