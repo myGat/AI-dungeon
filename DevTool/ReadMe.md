@@ -1,13 +1,13 @@
 This is a tool helping you to create and debug scripts for AID.
 
-- It allows to concatenate several file to create the 4 files you can copy/paste on AID 
+- It concatenates several file to create the 4 files you can copy/paste on AID 
 (the shared library, the input modifier, the context modifier and the output modifer)
 
-- Then it create a webpage you can open on your computer to test and debug the scripts. 
+- Then it creates a webpage you can open on your computer to test and debug the scripts. 
 This allows you to make some basic debug, and correct the bugs directly on your local computer -
 instead of correcting on AID and then backcopy the corrections on your local computer.
 
-You'll still have to debug some parts on AID; at least, you'll have to test the AI's reaction. 
+You'll still have to debug some parts on AID; at least, you'll have to test the AI's reaction on AID. 
 Moreover, the way I emulate AID cripting is far from perfect, and there may be some difference on the actual AID
 (eg, you may use a deactivated function).
 
