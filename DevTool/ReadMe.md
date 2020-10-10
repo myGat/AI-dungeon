@@ -32,7 +32,8 @@ Use my work at your own risk.
 
 - create a new working directory. 
 
-- copy localServer.js and ScriptGenerator.js on your working directory. Copy the folder 'webpage' with its content in your working directory.
+- copy localServer.js, ScriptGenerator.js, config.json and buildFiles.json in your working directory. 
+Copy the folder 'webpage' with its content in your working directory.
 
 - open buildFiles.json: it's a json file with the lists sharedLiraryFiles, inputModFiles, contextModFiles, and outputModFiles.
 those are the list of files that will be concatenated to create the 4 scripts. Modify those lists to suit your need. Note: the default values use files given here 
@@ -64,7 +65,7 @@ files and copy/paste their content in the corresponding scripts on AID.
 
 - create a new working directory. 
 
-- copy offlineVersion.js and ScriptGenerator.js on your working directory. Copy the folder 'webpage' with its content in your working directory.
+- copy offlineVersion.js, ScriptGenerator.js, config.json and buildFiles.json in your working directory. Copy the folder 'webpage' with its content in your working directory.
 
 - open buildFiles.json: it's a json file with the lists sharedLiraryFiles, inputModFiles, contextModFiles, and outputModFiles.
 those are the list of files that will be concatenated to create the 4 scripts. Modify those list to suit your need. Note: the default values use files given here 
@@ -87,7 +88,7 @@ files and copy/paste their content in the corresponding scripts on AID.
 
 ## Handle several projects
 
-When you call node with the terminal, there's a second optional argument: if you give it a folder name, 
+When you call node in the terminal, there's a second optional argument: if you give it a folder name, 
 the script will search for the buildFile.json file in this folder, and create in this folder a subfolder 
 "generated scripts" to put the generated scripts. This allow you to work in separate folders, with different
 fils to concatenate, and without destroying the generated scripts for this project.
