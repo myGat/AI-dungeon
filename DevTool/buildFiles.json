@@ -1,0 +1,16 @@
+{
+    "sharedLiraryFiles": [
+        "./examples/shared library example.js"
+    ],
+    "inputModFiles": [
+        "./examples/input modifier example.js",
+        "./templates/input modifier template.js"
+    ],
+    "contextModFiles": [
+        "./templates/context modifier template.js"
+    ],
+    "outputModFiles": [
+        "./examples/output modifier example.js",
+        "./templates/output modifier template.js"
+    ]
+}

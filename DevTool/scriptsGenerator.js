@@ -1,36 +1,43 @@
 
-const buildFiles = {
-    sharedLiraryFiles: ['./examples/shared library example.js'],
-    inputModFiles: ['./examples/input modifier example.js', './templates/input modifier template.js'],
-    contextModFiles: ['./templates/context modifier template.js'],
-    outputModFiles: ['./examples/output modifier example.js', './templates/output modifier template.js']
+const fs = require('fs');
+const path = require("path")
+
+const project = process.argv[2] ? process.argv[2] : "."
+
+const buildFilesName = "buildFiles.json"
+
+const configFile = "config.json"
+const rawConfig = fs.readFileSync(configFile)
+const config = JSON.parse(rawConfig)
+
+let buildFiles = { 
+    sharedLiraryFiles: [],
+    inputModFiles: [],
+    contextModFiles: [],
+    outputModFiles: []
 }
 
+const projectGeneratedScriptsFolder = path.join(project, config.generatedScriptsFolder)
+const generatedSharedLibrary = path.join(project, config.generatedScriptsFolder, config.generatedSharedLibraryFile)
+const generatedInputMod = path.join(project, config.generatedScriptsFolder, config.generatedInputModFile)
+const generatedContextMod = path.join(project, config.generatedScriptsFolder, config.generatedContextModFile)
+const generatedOutputMod = path.join(project, config.generatedScriptsFolder, config.generatedOutputModFile)
 
-var path = require("path")
-const generatedScriptsFolder = "generated scripts"
-const webpageFolder = "webpage"
-
-const generatedSharedLibrary = path.join(generatedScriptsFolder, "shared library (generated).js")
-const generatedInputMod = path.join(generatedScriptsFolder, "input modifier (generated).js")
-const generatedContextMod = path.join(generatedScriptsFolder, "context modifier (generated).js")
-const generatedOutputMod = path.join(generatedScriptsFolder, "output modifier (generated).js")
-
-const finalScript = path.join(webpageFolder, "final script (generated).js")
-const indexPage = path.join(webpageFolder, "index.html")
-const pageScript = path.join(webpageFolder, "pageScript.js")
+const finalScript = path.join(config.webpageFolder, config.finalScriptFile)
+const indexPage = path.join(config.webpageFolder, config.indexPageFile)
+const pageScript = path.join(config.webpageFolder, config.pageScriptFile)
 
 
 exports.indexPage = indexPage
 exports.finalScript = finalScript
 exports.pageScript = pageScript
-var fs = require('fs');
 
 
 exports.createScriptFiles = () => {
-    
-    if(!fs.existsSync(generatedScriptsFolder))
-    fs.mkdirSync(generatedScriptsFolder)
+    setBuildFiles()
+
+    if(!fs.existsSync(projectGeneratedScriptsFolder))
+        fs.mkdirSync(projectGeneratedScriptsFolder)
 
     createSharedLibrary()
 
@@ -44,42 +51,58 @@ exports.createScriptFiles = () => {
     createFinalScript()
 }
 
+function setBuildFiles(){
+    buildFilesFile = path.join(project, buildFilesName)
+
+    const rawBuildFiles = fs.readFileSync(buildFilesFile)
+    buildFiles = JSON.parse(rawBuildFiles)
+}
+
 function createSharedLibrary(){
     fs.writeFileSync(generatedSharedLibrary, "")
     buildFiles.sharedLiraryFiles.forEach(f => {
-        fs.appendFileSync(generatedSharedLibrary, fs.readFileSync(f))
+        const fileName = path.join(project, f)
+        fs.appendFileSync(generatedSharedLibrary, fs.readFileSync(fileName))
     })
 }
 
 function createInputModScript(){
     fs.writeFileSync(generatedInputMod, "")
     buildFiles.inputModFiles.forEach(f => {
-        fs.appendFileSync(generatedInputMod, fs.readFileSync(f))
+        const fileName = path.join(project, f)
+        fs.appendFileSync(generatedInputMod, fs.readFileSync(fileName))
     })
 }
 
 function createContextModScript(){
     fs.writeFileSync(generatedContextMod, "")
     buildFiles.contextModFiles.forEach(f => {
-        fs.appendFileSync(generatedContextMod, fs.readFileSync(f))
+        const fileName = path.join(project, f)
+        fs.appendFileSync(generatedContextMod, fs.readFileSync(fileName))
     })
 }
 
 function createOutputModScript(){
     fs.writeFileSync(generatedOutputMod, "")
     buildFiles.outputModFiles.forEach(f => {
-        fs.appendFileSync(generatedOutputMod, fs.readFileSync(f))
+        const fileName = path.join(project, f)
+        fs.appendFileSync(generatedOutputMod, fs.readFileSync(fileName))
     })
 }
 
 function createFinalScript(){
     fs.writeFileSync(finalScript, "var state = {memory: {}}\nvar info={actionCount:0}\nvar worldEntries = []\nvar quests = []\n")
-    fs.appendFileSync(finalScript, fs.readFileSync(generatedSharedLibrary))
     fs.appendFileSync(finalScript, "\nfunction InputModifier(text) {\n");
+    fs.appendFileSync(finalScript, fs.readFileSync(generatedSharedLibrary))
+    fs.appendFileSync(finalScript, "\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedInputMod))
     fs.appendFileSync(finalScript, "\nreturn modifier(text).text\n}\nfunction ContextModifier(text) {\n");
+    fs.appendFileSync(finalScript, fs.readFileSync(generatedSharedLibrary))
+    fs.appendFileSync(finalScript, "\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedContextMod))
     fs.appendFileSync(finalScript, "\nreturn modifier(text).text\n}\nfunction OutputModifier(text) {\n");
+    fs.appendFileSync(finalScript, fs.readFileSync(generatedSharedLibrary))
+    fs.appendFileSync(finalScript, "\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedOutputMod))
     fs.appendFileSync(finalScript, "\nreturn modifier(text).text\n}\n");
 }
