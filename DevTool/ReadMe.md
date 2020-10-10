@@ -36,8 +36,8 @@ Use my work at your own risk.
 Copy the folder 'webpage' with its content in your working directory.
 
 - open buildFiles.json: it's a json file with the lists sharedLiraryFiles, inputModFiles, contextModFiles, and outputModFiles.
-those are the list of files that will be concatenated to create the 4 scripts. Modify those lists to suit your need. Note: the default values use files given here 
-in the templates and examples folders to show how it works. 
+those are the list of files that will be concatenated to create the 4 scripts. Modify those lists to suit your need. Note: the default values are the files given here 
+in the templates and examples folders. 
 
 - open a terminal in your working directory (if you use Visual Studio Code, you have a terminal at the bottom of the window). 
 Type "node localServer.js" : this create a server on the port 8080 of your computer.
@@ -68,8 +68,8 @@ files and copy/paste their content in the corresponding scripts on AID.
 - copy offlineVersion.js, ScriptGenerator.js, config.json and buildFiles.json in your working directory. Copy the folder 'webpage' with its content in your working directory.
 
 - open buildFiles.json: it's a json file with the lists sharedLiraryFiles, inputModFiles, contextModFiles, and outputModFiles.
-those are the list of files that will be concatenated to create the 4 scripts. Modify those list to suit your need. Note: the default values use files given here 
-in the templates and examples folders to show how it works. 
+those are the list of files that will be concatenated to create the 4 scripts. Modify those list to suit your need. Note: the default values are the files given here 
+in the templates and examples folders. 
 
 - open a terminal in your working directory (if you use Visual Studio Code, you have a terminal at the bottom of the window). 
 Type "node offlineVersion.js" : this concatenate the script.
