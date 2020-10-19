@@ -5,7 +5,7 @@ commandHandler = {
     //   state.commandHandler.aliasList = {}
     // },
     consume:function(input){
-      delete state.commandHandler.isCommand
+      delete state.commandHandler.isExecutingCommand
       delete state.commandHandler.currentCommand
 
       const possibleTextStarts=[
@@ -21,7 +21,7 @@ commandHandler = {
 
       if (currentStart){
         let consume = true
-        state.commandHandler.isCommand = true
+        state.commandHandler.isExecutingCommand = true
         try
         {
           //TODO: better handling of the end of the "do/say" than a substring...

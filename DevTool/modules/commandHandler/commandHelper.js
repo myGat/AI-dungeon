@@ -9,8 +9,7 @@ commandHelper = {
             execute: function(args) {
                 if (args && args[0] && args[0].startsWith("-")){
                     if (args[0].indexOf("c") >= 0){
-                        this.dontConsume = true;
-                        this.input = "deleteInput"
+                        this.dontConsume = {input: "deleteInput"};
                     }
                 }
 
@@ -71,9 +70,9 @@ commandHelper = {
             throw `Invalid Command\nCommand ${settings.commandHandler.prefix}${commandNameOrAlias} do not exist.\n`;
         } // Command is not in the list, lets exit early.
     
-        //   let initArgs
-        //   if (!command.noredo)
-        //     initArgs = [...args] //args may be modified by the command... (maybe there's a better way?)
+        let initArgs
+        if (!command.noredo)
+          initArgs = [...args] //args may be modified by the command... (maybe there's a better way?)
             
         command.execute(args);
         state.commandHandler.currentCommand = commandName
@@ -83,43 +82,60 @@ commandHelper = {
         }
         if (command.dontConsume){
           consume = false
-          if (command.input)
-          {
-            state.commandHandler.input = command.input
+
+          state.commandHandler.input = command.dontConsume.input ?
+              command.dontConsume.input : commandName
+          // if (command.dontConsume.input){
+          //   state.commandHandler.input = command.dontConsume.input
+          // }
+          if (command.dontConsume.inputArgs){
+            state.commandHandler.inputArgs = command.dontConsume.inputArgs
           }
-          if (command.inputArgs){
-            state.commandHandler.inputArgs = command.inputArgs
+    
+          state.commandHandler.context = command.dontConsume.context ?
+              command.dontConsume.context : commandName
+          // if (command.dontConsume.context){
+          //   state.commandHandler.context = command.dontConsume.context
+          // }
+          if (command.dontConsume.contextArgs){
+            state.commandHandler.contextArgs = command.dontConsume.contextArgs
+          }
+
+          state.commandHandler.output = command.dontConsume.output ?
+              command.dontConsume.output : commandName
+          // if (command.dontConsume.output){
+          //   state.commandHandler.output = command.dontConsume.output
+          // }
+          if (command.dontConsume.outputArgs){
+            state.commandHandler.outputArgs = command.dontConsume.outputArgs
           }
         }
         else if (command.queryAI){
           state.modules.queryAI = true
-        }
 
-        if (command.dontConsume || command.queryAI){
-          if (command.output)
-          {
-            state.commandHandler.output = command.output
-          }
-          if (command.outputArgs){
-            state.commandHandler.outputArgs = command.outputArgs
+          state.commandHandler.output = command.queryAI.output ?
+              command.queryAI.output : commandName
+          // if (command.queryAI.output){
+          //   state.commandHandler.output = command.queryAI.output
+          // }
+          if (command.queryAI.outputArgs){
+            state.commandHandler.outputArgs = command.queryAI.outputArgs
           }
     
-          if (command.context)
-          {
-            state.commandHandler.context = command.context
-          }
-          if (command.contextArgs){
-            state.commandHandler.contextArgs = command.contextArgs
+          state.commandHandler.context = command.queryAI.context ?
+              command.queryAI.context : commandName
+          // if (command.queryAI.context){
+          //   state.commandHandler.context = command.queryAI.context
+          // }
+          if (command.queryAI.contextArgs){
+            state.commandHandler.contextArgs = command.queryAI.contextArgs
           }
         }
-    
-    
-          //commandHandler.executedCommandName = commandName
           
-        //   if (!command.noredo){
-        //     state.lastCommand = commandName
-        //     state.lastArgs = initArgs
-        //   }
+        if (!command.noredo){
+          state.commandHandler.lastCommand = commandName
+          state.commandHandler.lastArgs = initArgs
+        }
       return consume
     }
 }
