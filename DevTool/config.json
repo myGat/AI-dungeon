@@ -1,10 +1,10 @@
 {
     "generatedScriptsFolder": "generated scripts",
 
-    "generatedSharedLibraryFile": "shared library (generated).js", 
-    "generatedInputModFile": "input modifier (generated).js",
-    "generatedContextModFile": "context modifier (generated).js",
-    "generatedOutputModFile": "output modifier (generated).js",
+    "generatedSharedLibraryFile": "shared.js", 
+    "generatedInputModFile": "inputModifier.js",
+    "generatedContextModFile": "contextModifier.js",
+    "generatedOutputModFile": "outputModifier.js",
 
     "webpageFolder": "webpage",
     "finalScriptFile": "final script (generated).js",
