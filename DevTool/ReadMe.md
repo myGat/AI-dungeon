@@ -116,6 +116,9 @@ hence it's hidden from the outside and it can't be used to save stuff outside of
         - folder modules/debugCommands with... No module for now, but the buildFiles.jon file concatening 
         the commandHandler and the module to obtain scripts that can directly be copied on AID.
         type "node offlineVersion.js "modules/debugCommands" to obtain the generated files.
+        
+- 20/10/20
+    -change name of generated files for direct upload. 
 
 
 # TODO (...Maybe one day)
