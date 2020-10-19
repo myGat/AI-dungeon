@@ -1,0 +1,17 @@
+{
+    "sharedLiraryFiles": [
+        "../commandHandler/commandHandler.js",
+        "../commandHandler/commandHelper.js",
+        "sharedConfig.js",
+        "../base/sharedLibrary.js"
+    ],
+    "inputModFiles": [
+        "../base/input.js"
+    ],
+    "contextModFiles": [
+        "../base/context.js"
+    ],
+    "outputModFiles": [
+        "../base/output.js"
+    ]
+}
