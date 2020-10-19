@@ -9,7 +9,8 @@ commandHelper = {
             execute: function(args) {
                 if (args && args[0] && args[0].startsWith("-")){
                     if (args[0].indexOf("c") >= 0){
-                        this.queryAI = true;
+                        this.dontConsume = true;
+                        this.input = "deleteInput"
                     }
                 }
 
@@ -25,10 +26,13 @@ commandHelper = {
                     {resultList.push(`${prefix}${c}`)}
                 }//.forEach(c => resultList.append(prefix + c.name))
                 state.message += `List of commands: ${resultList.join(", ")}\n`; 
-    
-                return "";
             },
         },
+        //utilitary for some commands with -c option
+        deleteInput: {
+            deactivate: true,
+            input: (input) => {return ""}
+        }
     }, 
     aliasList: {
         lc  : { command:"listCommands"},
@@ -39,6 +43,8 @@ commandHelper = {
         const args = text.split(/ +/); // Create a list of the words provided.
         const commandNameOrAlias = args.shift(); // Fetch and remove the actual command from the list.
         //state.message += text
+
+        let consume = true 
           
         let commandName, command
         if (commandNameOrAlias in commandHelper.commandList)
@@ -69,27 +75,41 @@ commandHelper = {
         //   if (!command.noredo)
         //     initArgs = [...args] //args may be modified by the command... (maybe there's a better way?)
             
-        const modifiedText = command.execute(args);
+        command.execute(args);
+        state.commandHandler.currentCommand = commandName
+
         if (command.forceOutput){
           state.modules.forceOutput = command.forceOutput
         }
-        if (command.queryAI){
+        if (command.dontConsume){
+          consume = false
+          if (command.input)
+          {
+            state.commandHandler.input = command.input
+          }
+          if (command.inputArgs){
+            state.commandHandler.inputArgs = command.inputArgs
+          }
+        }
+        else if (command.queryAI){
           state.modules.queryAI = true
-    
-          if (command.queryAI.output)
+        }
+
+        if (command.dontConsume || command.queryAI){
+          if (command.output)
           {
-            state.commandHandler.output = command.queryAI.output
+            state.commandHandler.output = command.output
           }
-          if (command.queryAI.outputArgs){
-            state.commandHandler.outputArgs = command.queryAI.outputArgs
+          if (command.outputArgs){
+            state.commandHandler.outputArgs = command.outputArgs
           }
     
-          if (command.queryAI.context)
+          if (command.context)
           {
-            state.commandHandler.context = command.queryAI.context
+            state.commandHandler.context = command.context
           }
-          if (command.queryAI.contextArgs){
-            state.commandHandler.contextArgs = command.queryAI.contextArgs
+          if (command.contextArgs){
+            state.commandHandler.contextArgs = command.contextArgs
           }
         }
     
@@ -100,6 +120,6 @@ commandHelper = {
         //     state.lastCommand = commandName
         //     state.lastArgs = initArgs
         //   }
-      
+      return consume
     }
 }
