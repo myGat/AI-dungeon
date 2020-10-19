@@ -1,3 +1,11 @@
+
+Object.defineProperty(Object.prototype, 'objectUtilitarySetterDummyName', {
+    value: function(target) {
+        target.text = this.text
+        if (this.stop) target.stop = this.stop
+    }
+})
+
 info.nemoryLength = 0 
 info.maxChars = 15000
 
@@ -8,10 +16,10 @@ pageBehavior = {}
 pageBehavior.runInput = () => {
     pageBehavior.updateState(true)
 
-    var text = pageBehavior.getInputText()
+    let text = pageBehavior.getInputText()
     
     if (text){
-        text = InputModifier(text)
+        text = InputModifier(text).text
     }
     pageBehavior.writeText(text)
     pageBehavior.writeSentText(text)
@@ -24,9 +32,9 @@ pageBehavior.runContext = () => {
     pageBehavior.updateState(true)
 
     //var text = pageBehavior.getHistoryText()
-    var text = pageBehavior.createContextText("")
+    let text = pageBehavior.createContextText("")
     
-    var sentText = ContextModifier(text)
+    let sentText = ContextModifier(text).text
     
     pageBehavior.writeText(text.slice(-(info.maxChars - info.memoryLength)))
     pageBehavior.writeSentText(sentText)
@@ -37,9 +45,9 @@ pageBehavior.runContext = () => {
 pageBehavior.runOutput = () => {
     pageBehavior.updateState(true)
     
-    var text = pageBehavior.getOutputText()
+    let text = pageBehavior.getOutputText()
     
-    text = OutputModifier(text)
+    text = OutputModifier(text).text
     
     pageBehavior.writeText(text)
     pageBehavior.writeSentText(text)
@@ -50,17 +58,22 @@ pageBehavior.runOutput = () => {
 pageBehavior.runInputContext = () => {
     pageBehavior.updateState(true)
 
-    var text = pageBehavior.getInputText()
+    let text = pageBehavior.getInputText()
+    let stop
     if (text){
-        text = InputModifier(text)
+        object = InputModifier(text)
+        text = object.text
+        stop = object.stop
     }
 
     pageBehavior.updateState(false)
 
-    var sentText = pageBehavior.createContextText(text)
-    sentText = ContextModifier(sentText)
-
-    text = `${pageBehavior.getHistoryText()}\n${text}`
+    let sentText = ""
+    if (!stop){
+        sentText = pageBehavior.createContextText(text)
+        sentText = ContextModifier(sentText).text
+    }
+    text = `${pageBehavior.getHistoryText()}${text}`
     
     pageBehavior.writeText(text)
     pageBehavior.writeSentText(sentText)
@@ -70,24 +83,33 @@ pageBehavior.runInputContext = () => {
 pageBehavior.runInputContextOutput = () => {
     pageBehavior.updateState(true)
 
-    var text = pageBehavior.getInputText()
+    let text = pageBehavior.getInputText()
+    let stop
     if (text){
-        text = InputModifier(text)
+        object = InputModifier(text)
+        text = object.text
+        stop = object.stop
     }
 
     pageBehavior.updateState(false)
 
-    var sentText = pageBehavior.createContextText(text)
-    sentText = ContextModifier(sentText)
+    let sentText = ""
+    if (!stop){
+        sentText = pageBehavior.createContextText(text)
+        sentText = ContextModifier(sentText).text
+    } 
 
-    text = `${pageBehavior.getHistoryText()}\n${text}`
+    text = `${pageBehavior.getHistoryText()}${text}`
 
     pageBehavior.updateState(false)
 
-    var outPutText = pageBehavior.getOutputText()
-    outPutText = OutputModifier(outPutText)
+    let outPutText = ""
+    if (!stop){
+        outPutText = pageBehavior.getOutputText()
+        outPutText = OutputModifier(outPutText).text
+    } 
 
-    text = `${text}\n${outPutText}`
+    text = `${text}${outPutText}`
     pageBehavior.writeText(text)
     pageBehavior.writeSentText(sentText)
     pageBehavior.writeState()
@@ -133,7 +155,7 @@ pageBehavior.getInputText = () => {
 
     let baseModifier = document.getElementById("baseModifier").value
     if (baseModifier == "none"){
-        return text
+        return "\n" + text
     }else if (baseModifier == "do"){
         text = text.trim()
         //add a trailing dot
@@ -141,13 +163,14 @@ pageBehavior.getInputText = () => {
         //unCapitalize first character
         text = text.charAt(0).toLowerCase() + text.slice(1)
 
-        return `\n> You ${text}` 
+        return `\n> You ${text}\n` 
     }else{ //baseModifier == "say"
         text = text.trim()
-        //add a trailing dot
-        if (!text.endsWith(".")) text += "."
+        //add a trailing quote
+        if (!text.startsWith("\"")) text = "\"" + text
+        if (!text.endsWith("\"")) text += "\""
 
-        return `\n> You say: "${text}"` 
+        return `\n> You say ${text}\n` 
     } 
 }
 
@@ -162,14 +185,26 @@ pageBehavior.getOutputText = () => {
 pageBehavior.createContextText = (text) => {
     //receive text modified by inputmod
     //send full context
-    var memory = ""
+    
+    let actualMemory = ""
+    if ( state.memory.context ){
+        if ( state.memory.context.length > 0 ){
+            state.memory.context.endsWith("\n") ? 
+              actualMemory = state.memory.context : 
+              actualMemory = state.memory.context + "\n"
+        }
+    }else if (memory && memory.length >0){
+        memory.endsWith("\n") ? actualMemory = memory : actualMemory = memory + "\n"    
+    }
+
+    info.nemoryLength = actualMemory.length //actualMemory or memory ?
+
     if (!state.memory.context){
         info.nemoryLength = 0 
     }else if (pageBehavior.isNullOrWhitespace(state.memory.context)){
         info.nemoryLength = 0 
     }else{
-        memory = state.memory.context.endsWith("\n") ? state.memory.context : state.memory.context+"\n"
-        info.nemoryLength = memory.length
+        actualMemory = state.memory.context.endsWith("\n") ? state.memory.context : state.memory.context+"\n"
     }
 
     var history = pageBehavior.getHistoryText()
@@ -186,9 +221,9 @@ pageBehavior.createContextText = (text) => {
                 `${text}\n${state.memory.frontMemory}` 
     }
 
-    history = `${lines.join("\n")}\n${text}`.slice(-(info.maxChars - info.memoryLength))
+    history = `${lines.join("\n")}${text}`.slice(-(info.maxChars - info.memoryLength))
     
-    return [memory, history].join("")
+    return [actualMemory, history].join("")
 
 }
 
