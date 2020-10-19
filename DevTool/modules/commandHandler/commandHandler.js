@@ -5,6 +5,9 @@ commandHandler = {
     //   state.commandHandler.aliasList = {}
     // },
     consume:function(input){
+      delete state.commandHandler.isCommand
+      delete state.commandHandler.currentCommand
+
       const possibleTextStarts=[
         {start: "", end: ""}, 
         {start: "\n> You say \"", end: "\"\n"}, 
@@ -17,10 +20,12 @@ commandHandler = {
       )
 
       if (currentStart){
+        let consume = true
+        state.commandHandler.isCommand = true
         try
         {
           //TODO: better handling of the end of the "do/say" than a substring...
-          modifiedText = commandHelper.analyseAndExecuteCommand(
+          consume = commandHelper.analyseAndExecuteCommand(
             input.substring(currentStart.start.length + settings.commandHandler.prefix.length, 
                             input.length - currentStart.end.length)
           )
@@ -30,29 +35,75 @@ commandHandler = {
           state.message += `Error: ${error}\n`
           state.message += `Your message: ${input}`
           state.modules.queryAI = false
-          modifiedText = ""
+          consume = true
         }
-        return true
+        
+        return consume
       }
-        // if (input.startsWith(pts.start + settings.commandHandler.prefix)) {
-        //   const args = text.slice(settings.commandHandler.prefix.length).split(/ +/); // Create a list of the words provided.
-        //   const commandName = args.shift(); // Fetch and remove the actual command from the list.
-        //   if (!(commandName in state.commandHandler.commandList)) {state.message += "Invalid Command!"; return true;} // Command is not in the list, lets exist early.
-        //   const command = state.commandHandler.commandList[commandName];
-        
-        // if (command.args && !args.length) {//If the command expects to be passed arguments, but none are present then
-        //   let reply = `You didn't provide any arguments!\n`
-        //   if (command.usage) {reply += `Example: \`${settings.commandHandler.prefix}${command.name} ${command.usage}\``;} // Provide instructions for how to use the command if provided.
-        //   state.message += reply;
-        //   return true;
-        // }
-        
-        
-    //     try{functions[command.module][command.name](args);}
-    //     catch (error) {state.message = `There was an error!\n${error}`;}
-    //     return true
-    //   }
       return false
+    },
+    input: function(input){
+      let modifiedInput = input
+      if (state.commandHandler) {
+        if (state.commandHandler.input) {
+          if (state.commandHandler.input in commandHelper.commandList
+              && commandHelper.commandList[state.commandHandler.input].input) {
+            try {
+              modifiedInput = commandHelper.commandList[state.commandHandler.input].input(modifiedInput)
+            }
+            catch (error) {
+              state.message += `commandHandler: bug in input: ${error}\n`
+            }
+          }
+        }
+
+        delete state.commandHandler.input
+        delete state.commandHandler.inputArgs
+
+      }
+      return modifiedInput
+    },
+    context: function(context){
+      let modifiedContext = context
+      if (state.commandHandler) {
+        if (state.commandHandler.context) {
+          if (state.commandHandler.context in commandHelper.commandList
+              && commandHelper.commandList[state.commandHandler.context].context) {
+            try {
+              modifiedContext = commandHelper.commandList[state.commandHandler.context].context(modifiedContext)
+            }
+            catch (error) {
+              state.message += `commandHandler: bug in context: ${error}\n`
+            }
+          }
+        }
+
+        delete state.commandHandler.context
+        delete state.commandHandler.contextArgs
+
+      }
+      return modifiedContext
+    },
+    output: function(output){
+      let modifiedOutput = output
+      if (state.commandHandler) {
+        if (state.commandHandler.output) {
+          if (state.commandHandler.output in commandHelper.commandList
+              && commandHelper.commandList[state.commandHandler.output].output) {
+            try {
+              modifiedOutput = commandHelper.commandList[state.commandHandler.output].output(modifiedOutput)
+            }
+            catch (error) {
+              state.message += `commandHandler: bug in output: ${error}\n`
+            }
+          }
+        }
+
+        delete state.commandHandler.output
+        delete state.commandHandler.outputArgs
+
+      }
+      return modifiedOutput
     },
     queryContext: function(context){
       let modifiedContext = context
@@ -64,7 +115,7 @@ commandHandler = {
               modifiedContext = commandHelper.commandList[state.commandHandler.context].context(context)
             }
             catch (error) {
-              state.message += `Bug in context: ${error}\n`
+              state.message += `commandHandler: bug in context: ${error}\n`
             }
           }
         }
@@ -87,7 +138,7 @@ commandHandler = {
             }
             catch(error)
             {
-              state.message += `Bug in output: ${error}\n`
+              state.message += `commandHandler: bug in output: ${error}\n`
             }
           }
         }
