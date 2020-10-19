@@ -91,18 +91,18 @@ function createOutputModScript(){
 }
 
 function createFinalScript(){
-    fs.writeFileSync(finalScript, "var state = {memory: {}}\nvar info={actionCount:0}\nvar worldEntries = []\nvar quests = []\n")
-    fs.appendFileSync(finalScript, "\nfunction InputModifier(text) {\n");
+    fs.writeFileSync(finalScript, "var state = {memory: {}}\nvar info={actionCount:0}\nvar worldEntries = []\nvar quests = []\nmemory = \"\"\n")
+    fs.appendFileSync(finalScript, "\nfunction InputModifier(text) {\nlet targetDummyName={}\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedSharedLibrary))
     fs.appendFileSync(finalScript, "\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedInputMod))
-    fs.appendFileSync(finalScript, "\nreturn modifier(text).text\n}\nfunction ContextModifier(text) {\n");
+    fs.appendFileSync(finalScript, "\n.objectUtilitarySetterDummyName(targetDummyName)\nreturn targetDummyName\n}\nfunction ContextModifier(text) {\nlet targetDummyName={}\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedSharedLibrary))
     fs.appendFileSync(finalScript, "\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedContextMod))
-    fs.appendFileSync(finalScript, "\nreturn modifier(text).text\n}\nfunction OutputModifier(text) {\n");
+    fs.appendFileSync(finalScript, ".objectUtilitarySetterDummyName(targetDummyName)\nreturn targetDummyName\n}\nfunction OutputModifier(text) {\nlet targetDummyName={}\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedSharedLibrary))
     fs.appendFileSync(finalScript, "\n");
     fs.appendFileSync(finalScript, fs.readFileSync(generatedOutputMod))
-    fs.appendFileSync(finalScript, "\nreturn modifier(text).text\n}\n");
+    fs.appendFileSync(finalScript, ".objectUtilitarySetterDummyName(targetDummyName)\nreturn targetDummyName\n}\n");
 }
