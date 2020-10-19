@@ -107,6 +107,16 @@ Eg :
     - better emulation of AID: now the shared library is copied in the three modifier, 
 hence it's hidden from the outside and it can't be used to save stuff outside of the state.
 
+- 19/10/20
+    - correction of a big bug which was preventing a good emulation of AID.
+    - handle memory object
+    - added the folders modules with:
+        - folder modules/base containing the work of Devon on module (available at https://github.com/Devon7925/AID-Scripting)
+        - folder modules/commandHandler with a module to handle commands (not debugged)
+        - folder modules/debugCommands with... No module for now, but the buildFiles.jon file concatening 
+        the commandHandler and the module to obtain scripts that can directly be copied on AID.
+        type "node offlineVersion.js "modules/debugCommands" to obtain the generated files.
+
 
 # TODO (...Maybe one day)
 
