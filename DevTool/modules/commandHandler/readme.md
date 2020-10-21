@@ -23,7 +23,7 @@ commandHelper.commandlist.myCommand = { // this create the command /myCommand
                                // queryAI can be an object to describe more complexe behavior
     context: function(text){return text}, // only useful when dontConsume or queryAI is true. Allow the command to perform some task at context phase (see explanation below).
     ouput: function(text){return text},   // only useful when dontConsume or queryAI is true. Allow the command to perform some task at output phase (see explanation below).
-    forceoutput: ""            //  only useful when queryAI is true. Set state.module.forceoutput (see module documentation)
+    forceoutput: ""            // Set state.module.forceoutput (see module documentation)
 }
 ```
 
