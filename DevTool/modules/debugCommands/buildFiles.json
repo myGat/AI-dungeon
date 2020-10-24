@@ -1,7 +1,10 @@
 {
     "sharedLiraryFiles": [
+        "debugMode.js", 
         "../commandHandler/commandHandler.js",
         "../commandHandler/commandHelper.js",
+        "../commandHandler/metaCommands.js",
+        "debug.js",
         "sharedConfig.js",
         "../base/sharedLibrary.js"
     ],
