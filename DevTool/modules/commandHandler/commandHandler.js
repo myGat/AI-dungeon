@@ -1,3 +1,5 @@
+//requires the commandHelper : https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/commandHandler/commandHelper.js
+
 commandHandler = {
     name:"commandHandler",
     // init:function(){
