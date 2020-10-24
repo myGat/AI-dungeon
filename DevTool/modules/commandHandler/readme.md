@@ -1,4 +1,6 @@
-A module to handle commands.
+A module to handle commands. 
+Separated into two files for clarity: CommandHandler.js, the actual module, and commandHelper.js, 
+containing some object the module needs (since module structure doesn't allow to add anything we want).
 
 Commands are properties of commandHelper.commandlist. 
 By default, it contains only the command /listCommands - because the command is need 
