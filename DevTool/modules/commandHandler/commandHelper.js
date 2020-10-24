@@ -7,7 +7,7 @@ commandHelper = {
             description: 'display a list of available commands',
             options: {c: "to make the ai continue the story"},
             execute: function(args) {
-                if (args && args[0] && args[0].startsWith("-")){
+                if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
                     if (args[0].indexOf("c") >= 0){
                         this.dontConsume = {input: "deleteInput"};
                     }
@@ -85,27 +85,18 @@ commandHelper = {
 
           state.commandHandler.input = command.dontConsume.input ?
               command.dontConsume.input : commandName
-          // if (command.dontConsume.input){
-          //   state.commandHandler.input = command.dontConsume.input
-          // }
           if (command.dontConsume.inputArgs){
             state.commandHandler.inputArgs = command.dontConsume.inputArgs
           }
     
           state.commandHandler.context = command.dontConsume.context ?
               command.dontConsume.context : commandName
-          // if (command.dontConsume.context){
-          //   state.commandHandler.context = command.dontConsume.context
-          // }
           if (command.dontConsume.contextArgs){
             state.commandHandler.contextArgs = command.dontConsume.contextArgs
           }
 
           state.commandHandler.output = command.dontConsume.output ?
               command.dontConsume.output : commandName
-          // if (command.dontConsume.output){
-          //   state.commandHandler.output = command.dontConsume.output
-          // }
           if (command.dontConsume.outputArgs){
             state.commandHandler.outputArgs = command.dontConsume.outputArgs
           }
@@ -115,18 +106,12 @@ commandHelper = {
 
           state.commandHandler.output = command.queryAI.output ?
               command.queryAI.output : commandName
-          // if (command.queryAI.output){
-          //   state.commandHandler.output = command.queryAI.output
-          // }
           if (command.queryAI.outputArgs){
             state.commandHandler.outputArgs = command.queryAI.outputArgs
           }
     
           state.commandHandler.context = command.queryAI.context ?
               command.queryAI.context : commandName
-          // if (command.queryAI.context){
-          //   state.commandHandler.context = command.queryAI.context
-          // }
           if (command.queryAI.contextArgs){
             state.commandHandler.contextArgs = command.queryAI.contextArgs
           }
