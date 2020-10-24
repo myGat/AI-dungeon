@@ -77,7 +77,7 @@ queryAI = {
 }
 ```
 If queryAI.context or queryAI.output isn't defined, the commandHandler will 
-try to call the function in the command itself - hence, you can just set dontConsume to true and put the relevant 
+try to call the function in the command itself - hence, you can just set queryAI to true and put the relevant 
 functions in the command.
 
 ##### state.commandHandler.currentCommand
