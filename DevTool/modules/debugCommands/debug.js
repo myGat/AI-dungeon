@@ -1,3 +1,4 @@
+//require to set debugMode and debugVerbosity beforehand - see https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/debugCommands/debugMode.js
 
 commandHelper.commandList.execute = {
     name: "execute", 
@@ -191,7 +192,7 @@ debug = {
         this.functions.execute(type);
     }, 
 	info: {
-		code: "",
+		code: "https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/debugCommands/debug.js",
 		description: "A module for debug purpose, to execute some command from the story." 
 	},
 	version: "0.1.4", 
