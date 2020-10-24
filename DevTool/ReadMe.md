@@ -43,7 +43,7 @@ those are the list of files that will be concatenated to create the 4 scripts. M
 in the templates and examples folders. 
 
 - open a terminal in your working directory (if you use Visual Studio Code, you have a terminal at the bottom of the window). 
-Type "node localServer.js" : this create a server on the port 8080 of your computer.
+Type: ```node localServer.js``` . This create a server on the port 8080 of your computer.
 
 - /!\ You should get a message from your firewall, asking if it should open open port 8080. /!\ 
 Tell it **you don't want to open the port**: you don't want other people to mess with this server.
@@ -78,7 +78,7 @@ those are the list of files that will be concatenated to create the 4 scripts. M
 in the templates and examples folders. 
 
 - open a terminal in your working directory (if you use Visual Studio Code, you have a terminal at the bottom of the window). 
-Type "node offlineVersion.js" : this concatenate the script.
+Type ```node offlineVersion.js``` . This concatenate the script.
 
 - go into the 'webpage' folder and open 'index.html' in a browser.
 
@@ -104,9 +104,9 @@ fils to concatenate, and without destroying the generated scripts for this proje
 
 Eg : 
 
-- node localServer.js "my subfolder"
+```node localServer.js "my subfolder"```
 
-- node offlineVersion.js "my subfolder"
+```node offlineVersion.js "my subfolder"```
 
 
 # Changelog
