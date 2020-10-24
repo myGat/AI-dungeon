@@ -33,7 +33,7 @@ commandHandler = {
         catch (error) 
         {
           state.message += `Error: ${error}\n`
-          state.message += `Your message: ${input}`
+          state.message += `Your message: ${input}\n`
           state.modules.queryAI = false
           consume = true
         }
@@ -149,12 +149,12 @@ commandHandler = {
       }
       state.modules.forceOutput = modifiedOutput
     },
-    settings:[{name:"prefix", default:"/"}],
+    settings:[{name:"prefix", default:"/"}, {name:"optionPrefix", default:"-"}],
     info: {
-  		code: "",
-  		description: "An module that handle commands (add commands in commandHelper.commandList"
+  		code: "https://github.com/myGat/AI-dungeon/tree/master/DevTool/modules/commandHandler",
+  		description: "A module that handle commands (add new commands in commandHelper.commandList"
 	  },
-    version:"1.0.0",
+    version:"0.1.4",
     minVersion:"0.1.4",
 
   }
