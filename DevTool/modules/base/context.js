@@ -5,6 +5,8 @@ const modifier = (text) => {
   }
   
   if(state.modules.contextIsContinue){
+    state.message = ""
+    
     if(state.modules.addToOut === undefined) state.modules.addToOut = ""
     
     for(i of state.modules.order) if(modules[i].process) modules[i].process("input")
@@ -21,10 +23,10 @@ const modifier = (text) => {
       }
     }
     
-    for(i of state.modules.order) if(modules[i].input) modifiedText = modules[i].input(modifedText)
+    for(i of state.modules.order) if(modules[i].input) modifiedText = modules[i].input(modifiedText)
     state.modules.addToOut += modifiedText
     
-    state.message = ""
+    //state.message = ""
     state.memory.context = memory
     state.memory.frontMemory = ""
   }
