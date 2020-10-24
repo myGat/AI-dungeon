@@ -6,7 +6,7 @@ Object.defineProperty(Object.prototype, 'objectUtilitarySetterDummyName', {
     }
 })
 
-info.nemoryLength = 0 
+info.memoryLength = 0 
 info.maxChars = 15000
 
 // object to avoid conflicts.
@@ -197,12 +197,12 @@ pageBehavior.createContextText = (text) => {
         memory.endsWith("\n") ? actualMemory = memory : actualMemory = memory + "\n"    
     }
 
-    info.nemoryLength = actualMemory.length //actualMemory or memory ?
+    info.memoryLength = actualMemory.length //actualMemory or memory ?
 
     if (!state.memory.context){
-        info.nemoryLength = 0 
+        info.memoryLength = 0 
     }else if (pageBehavior.isNullOrWhitespace(state.memory.context)){
-        info.nemoryLength = 0 
+        info.memoryLength = 0 
     }else{
         actualMemory = state.memory.context.endsWith("\n") ? state.memory.context : state.memory.context+"\n"
     }
@@ -228,7 +228,8 @@ pageBehavior.createContextText = (text) => {
 }
 
 pageBehavior.writeState = () => {
-    document.getElementById("finalState").value = JSON.stringify(state)
+    document.getElementById("finalState").value = JSON.stringify(state, null, 2)
+    document.getElementById("finalMessage").value = state.message
 }
 
 pageBehavior.writeText = (text) => {
@@ -237,7 +238,7 @@ pageBehavior.writeText = (text) => {
 
 pageBehavior.writeSentText = (text) => {
     // cut a text too long
-    document.getElementById("AItext").value = text.slice(-(info.maxChars - info.memoryLength))
+    document.getElementById("AItext").value = text.slice(-(info.maxChars))
 }
 
 
