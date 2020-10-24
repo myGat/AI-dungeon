@@ -7,6 +7,9 @@ This is a tool helping you to create and debug scripts for AID.
 This allows you to make some basic debug, and correct the bugs directly on your local computer -
 instead of correcting on AID and then backcopy the corrections on your local computer.
 
+- When creating the files, if you have archiver (a node extension: https://www.archiverjs.com/) installed, it will creat the zip file.
+You can directly upload this zip on AID.
+
 You'll still have to debug some parts on AID; at least, you'll have to test the AI's reaction on AID. 
 Moreover, the way I emulate AID cripting is far from perfect, and there may be some difference on the actual AID
 (eg, you may use a deactivated function).
@@ -54,9 +57,12 @@ only interest of the server version. It's convenient but it's maybe an overkill)
 
 - once you're satisfied, kill the server you created: ctrl+c in the terminal (or kill the terminal).
 
-- in your working directory, there's now a "generated scripts" folder, containing the files "shared library (generated).js",
-"input modifier (generated).js", "context modifier (generated).js" and "output modifier (generated).js". You can open those 
+- in your working directory, there's now a "generated/scripts" folder, containing the files "shared.js",
+"inputModifier.js", "contextModifier.js" and "outputModifier.js". You can open those 
 files and copy/paste their content in the corresponding scripts on AID.
+
+- if you have archiver (a node extension: https://www.archiverjs.com/) installed, you have 
+an archive "scripts.zip" in the folder "generated". You can directly upload it on AID. 
 
 - You're done!
 
@@ -79,9 +85,12 @@ Type "node offlineVersion.js" : this concatenate the script.
 - You can test your scripts. Correct the local version of the scripts, and each time, re-run "node offlineVersion.js" on the terminal
 to re-create the script, then re-actualize index.html in your browser.
 
-- Once you're satisfied, you'll find a "generated scripts" folder in your working directory, containing the files "shared library (generated).js",
-"input modifier (generated).js", "context modifier (generated).js" and "output modifier (generated).js". You can open those 
+- Once you're satisfied, you'll find a "generated" folder in your working directory, containing the files "shared.js",
+"inputModifier.js", "contextModifier.js" and "outputModifier.js". You can open those 
 files and copy/paste their content in the corresponding scripts on AID.
+
+- if you have archiver (a node extension: https://www.archiverjs.com/) installed, you have 
+an archive "scripts.zip" in the folder "generated". You can directly upload it on AID. 
 
 - You're done!
 
@@ -118,25 +127,35 @@ hence it's hidden from the outside and it can't be used to save stuff outside of
         type "node offlineVersion.js "modules/debugCommands" to obtain the generated files.
         
 - 20/10/20
-    -change name of generated files for direct upload. 
+    - change name of generated files for direct upload. 
+    
+- 24/10/20
+    - create the zip files.
+    - some corrections.
+    - a box containing state.message in the debug page.
+    - debugCommand finished.
 
 
 # TODO (...Maybe one day)
 
+when creating scripts:
+
+- [x] create the zip file.
+
 In the debug page:
 
-- handle the quests object (done)
+- [x] handle the quests object
 
-- emulate the way state.memory.frontMemory, state.memory.context and state.memory.authorsNote are used to create the text sent to the context modifier (done)
+- [x] emulate the way state.memory.frontMemory, state.memory.context and state.memory.authorsNote are used to create the text sent to the context modifier
 
-- spinbox to set the info.actionCount
+- [ ] spinbox to set the info.actionCount
 
-- spinbox to set info.maxChars (it's easier to test if the context modifier cuts text properly if info.maxChars is low)
+- [ ] spinbox to set info.maxChars (it's easier to test if the context modifier cuts text properly if info.maxChars is low)
 
-- emulate the memory box.
+- [ ] emulate the memory box.
 
-- emulate the author's note box.
+- [ ] emulate the author's note box.
 
-- emulate quest system.
+- [ ] emulate quest system.
 
-- emulate world infos...
+- [ ] emulate world infos...
