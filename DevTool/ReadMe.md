@@ -1,14 +1,14 @@
 This is a tool helping you to create and debug scripts for AID.
 
 - It concatenates several file to create the 4 files you can copy/paste on AID 
-(the shared library, the input modifier, the context modifier and the output modifer)
+(the shared library, the input modifier, the context modifier and the output modifer).
+
+- When creating the files, if you have archiver (a node extension: https://www.archiverjs.com/) installed, it will creat the zip file.
+You can directly upload this zip on AID. (It you don't have archiver, it shouldn't crash... not tested).
 
 - Then it creates a webpage you can open on your computer to test and debug the scripts. 
 This allows you to make some basic debug, and correct the bugs directly on your local computer -
 instead of correcting on AID and then backcopy the corrections on your local computer.
-
-- When creating the files, if you have archiver (a node extension: https://www.archiverjs.com/) installed, it will creat the zip file.
-You can directly upload this zip on AID.
 
 You'll still have to debug some parts on AID; at least, you'll have to test the AI's reaction on AID. 
 Moreover, the way I emulate AID cripting is far from perfect, and there may be some difference on the actual AID
