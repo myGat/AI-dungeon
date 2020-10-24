@@ -14,6 +14,6 @@ Press enter, nothing seems to happens.
 
 ```/hello```
 
-It seems you've created an "hello world!" command! :o :O :o
+Press enter. It seems you've created an "hello world!" command! :o :O :o
 
 This is as useless as any other hello world program.
