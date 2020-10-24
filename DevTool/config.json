@@ -1,5 +1,8 @@
 {
-    "generatedScriptsFolder": "generated scripts",
+    "generatedFolder": "generated",
+    "zipName": "scripts.zip",
+
+    "generatedScriptsSubFolder": "scripts",
 
     "generatedSharedLibraryFile": "shared.js", 
     "generatedInputModFile": "inputModifier.js",
