@@ -1,6 +1,6 @@
 Scripts for commands for debug purpose: allows to directly enter javascript commands during story mode. 
 
-Crated using my devTool in this project: https://github.com/myGat/AI-dungeon/tree/master/DevTool/modules/debugCommands
+Created using my devTool in this project: https://github.com/myGat/AI-dungeon/tree/master/DevTool/modules/debugCommands
 
 Once in story mode on AID in a scenario using those scripts, try this: 
 
