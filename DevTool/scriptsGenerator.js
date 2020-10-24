@@ -1,6 +1,7 @@
 
 const fs = require('fs');
 const path = require("path")
+const zlib = require('zlib');
 
 const project = process.argv[2] ? process.argv[2] : "."
 
@@ -17,11 +18,14 @@ let buildFiles = {
     outputModFiles: []
 }
 
-const projectGeneratedScriptsFolder = path.join(project, config.generatedScriptsFolder)
-const generatedSharedLibrary = path.join(project, config.generatedScriptsFolder, config.generatedSharedLibraryFile)
-const generatedInputMod = path.join(project, config.generatedScriptsFolder, config.generatedInputModFile)
-const generatedContextMod = path.join(project, config.generatedScriptsFolder, config.generatedContextModFile)
-const generatedOutputMod = path.join(project, config.generatedScriptsFolder, config.generatedOutputModFile)
+const projectGeneratedFolder = path.join(project, config.generatedFolder)
+const generatedZip = path.join(projectGeneratedFolder, config.zipName)
+
+const projectGeneratedScriptsFolder = path.join(projectGeneratedFolder, config.generatedScriptsSubFolder)
+const generatedSharedLibrary = path.join(projectGeneratedScriptsFolder, config.generatedSharedLibraryFile)
+const generatedInputMod = path.join(projectGeneratedScriptsFolder, config.generatedInputModFile)
+const generatedContextMod = path.join(projectGeneratedScriptsFolder, config.generatedContextModFile)
+const generatedOutputMod = path.join(projectGeneratedScriptsFolder, config.generatedOutputModFile)
 
 const finalScript = path.join(config.webpageFolder, config.finalScriptFile)
 const indexPage = path.join(config.webpageFolder, config.indexPageFile)
@@ -36,7 +40,9 @@ exports.pageScript = pageScript
 exports.createScriptFiles = () => {
     setBuildFiles()
 
-    if(!fs.existsSync(projectGeneratedScriptsFolder))
+    if (!fs.existsSync(projectGeneratedFolder))
+        fs.mkdirSync(projectGeneratedFolder)
+    if (!fs.existsSync(projectGeneratedScriptsFolder))
         fs.mkdirSync(projectGeneratedScriptsFolder)
 
     createSharedLibrary()
@@ -49,6 +55,8 @@ exports.createScriptFiles = () => {
 
 
     createFinalScript()
+    
+    createZip()
 }
 
 function setBuildFiles(){
@@ -63,6 +71,7 @@ function createSharedLibrary(){
     buildFiles.sharedLiraryFiles.forEach(f => {
         const fileName = path.join(project, f)
         fs.appendFileSync(generatedSharedLibrary, fs.readFileSync(fileName))
+        fs.appendFileSync(generatedSharedLibrary, "\n")
     })
 }
 
@@ -71,6 +80,7 @@ function createInputModScript(){
     buildFiles.inputModFiles.forEach(f => {
         const fileName = path.join(project, f)
         fs.appendFileSync(generatedInputMod, fs.readFileSync(fileName))
+        fs.appendFileSync(generatedInputMod, "\n")
     })
 }
 
@@ -79,6 +89,7 @@ function createContextModScript(){
     buildFiles.contextModFiles.forEach(f => {
         const fileName = path.join(project, f)
         fs.appendFileSync(generatedContextMod, fs.readFileSync(fileName))
+        fs.appendFileSync(generatedContextMod, "\n")
     })
 }
 
@@ -87,6 +98,7 @@ function createOutputModScript(){
     buildFiles.outputModFiles.forEach(f => {
         const fileName = path.join(project, f)
         fs.appendFileSync(generatedOutputMod, fs.readFileSync(fileName))
+        fs.appendFileSync(generatedOutputMod, "\n")
     })
 }
 
@@ -106,3 +118,42 @@ function createFinalScript(){
     fs.appendFileSync(finalScript, fs.readFileSync(generatedOutputMod))
     fs.appendFileSync(finalScript, ".objectUtilitarySetterDummyName(targetDummyName)\nreturn targetDummyName\n}\n");
 }
+
+function createZip(){
+    try{
+        const archiver = require('archiver');
+        
+        const output = fs.createWriteStream(generatedZip);
+        const archive = archiver('zip', {
+            zlib: { level: 9 } // Sets the compression level.
+        });
+
+        output.on('close', function() {
+          //console.log(archive.pointer() + ' total bytes');
+          console.log('archiver has been finalized and the output file descriptor has closed.');
+        });
+
+        // archive.on('warning', function (err) {
+        //     if (err.code === 'ENOENT') {
+        //         // log warning
+        //     } else {
+        //         // throw error
+        //         throw err;
+        //     }
+        // });
+
+        archive.on('error', function (err) {
+            throw err;
+        });
+  
+        archive.pipe(output);
+
+        archive.directory(projectGeneratedScriptsFolder, false);
+
+        archive.finalize();
+
+    }catch (err) {
+        console.log("zip not created: " + err)
+    }
+}
+
