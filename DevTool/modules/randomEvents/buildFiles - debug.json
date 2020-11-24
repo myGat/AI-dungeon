@@ -1,0 +1,25 @@
+{
+    "sharedLiraryFiles": [
+        "../debugCommands/debugMode.js", 
+        "../../utils/isNullOrWhiteSpace.js",
+        "../preciseMemory/preciseMemory.js",
+        "../eventsHandler/eventsHandler.js",
+        "../randomEvents/randomEvents.js",
+        "../commandHandler/commandHandler.js",
+        "../commandHandler/commandHelper.js",
+        "../commandHandler/metaCommands.js",
+        "../debugCommands/debug.js",
+        "../commands/describe.js",
+        "sharedConfigDebug.js",
+        "../base/sharedLibrary.js"
+    ],
+    "inputModFiles": [
+        "../base/input.js"
+    ],
+    "contextModFiles": [
+        "../base/context.js"
+    ],
+    "outputModFiles": [
+        "../base/output.js"
+    ]
+}

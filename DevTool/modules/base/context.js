@@ -1,4 +1,6 @@
 const modifier = (text) => {
+  let modifiedContext = text
+
   if(state.modules.queryAI) for(module of modules) if(module.name === state.modules.queryModule && module.queryContext) {
     if(state.memory.authorsNote === "") delete state.memory.authorsNote
     return {text: module.queryContext(text)}
@@ -24,6 +26,11 @@ const modifier = (text) => {
     }
     
     for(i of state.modules.order) if(modules[i].input) modifiedText = modules[i].input(modifiedText)
+    
+    modifiedContext += modifiedText
+    if (modifiedContext.length > info.maxChars){
+      modifiedContext = modifiedContext.slice(0, info.memoryLength) + modifiedContext.slice( -(info.maxChars - info.memoryLength) )
+    }
     state.modules.addToOut += modifiedText
     
     //state.message = ""
@@ -31,10 +38,9 @@ const modifier = (text) => {
     state.memory.frontMemory = ""
   }
   for(i of state.modules.order) if(modules[i].process) modules[i].process("context")
-  let modifiedText = text
-  for(i of state.modules.order) if(modules[i].context) modifiedText = modules[i].context(modifiedText)
+  for(i of state.modules.order) if(modules[i].context) modifiedContext = modules[i].context(modifiedContext)
   if(state.memory.authorsNote === "") delete state.memory.authorsNote
-  return { text: modifiedText }
+  return { text: modifiedContext }
 }
 
 // Don't modify this part

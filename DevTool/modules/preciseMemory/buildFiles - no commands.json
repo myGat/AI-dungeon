@@ -1,0 +1,17 @@
+{
+    "sharedLiraryFiles": [
+        "../../utils/isNullOrWhiteSpace.js",
+        "preciseMemory.js",
+        "sharedConfigNoCommands.js",
+        "../base/sharedLibrary.js"
+    ],
+    "inputModFiles": [
+        "../base/input.js"
+    ],
+    "contextModFiles": [
+        "../base/context.js"
+    ],
+    "outputModFiles": [
+        "../base/output.js"
+    ]
+}

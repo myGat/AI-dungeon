@@ -1,0 +1,22 @@
+{
+    "sharedLiraryFiles": [
+        "../debugMode.js", 
+        "../../utils/isNullOrWhiteSpace.js",
+        "../commandHandler/commandHandler.js",
+        "../commandHandler/commandHelper.js",
+        "../commandHandler/metaCommands.js",
+        "../debug.js",
+        "describe.js",
+        "sharedConfig.js",
+        "../base/sharedLibrary.js"
+    ],
+    "inputModFiles": [
+        "../base/input.js"
+    ],
+    "contextModFiles": [
+        "../base/context.js"
+    ],
+    "outputModFiles": [
+        "../base/output.js"
+    ]
+}

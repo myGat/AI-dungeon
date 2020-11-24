@@ -64,6 +64,8 @@ pageBehavior.runInputContext = () => {
         object = InputModifier(text)
         text = object.text
         stop = object.stop
+    }else{
+        text = ""
     }
 
     pageBehavior.updateState(false)
@@ -89,6 +91,8 @@ pageBehavior.runInputContextOutput = () => {
         object = InputModifier(text)
         text = object.text
         stop = object.stop
+    }else{
+        text = ""
     }
 
     pageBehavior.updateState(false)
@@ -134,6 +138,11 @@ pageBehavior.updateState = (allowUserChange) => {
     }else{
         //reproduce AID behavior - no functions stored in state :p
         state = JSON.parse(JSON.stringify(state))
+    }
+    
+    if (allowUserChange){
+        info.actionCount = Number(document.getElementById("actionCount").value)
+        info.maxChars = Number(document.getElementById("maxChars").value)
     }
 
     //Always create a memory - the script may need it
@@ -186,6 +195,7 @@ pageBehavior.createContextText = (text) => {
     //receive text modified by inputmod
     //send full context
     
+    pageBehavior.updateMemory()
     let actualMemory = ""
     if ( state.memory.context ){
         if ( state.memory.context.length > 0 ){
@@ -209,9 +219,15 @@ pageBehavior.createContextText = (text) => {
 
     var history = pageBehavior.getHistoryText()
     const lines = history.split("\n")
+
     if (state.memory.authorsNote && lines.length > 2)
     {
         lines.splice(-3, 0, `[Author's note: ${state.memory.authorsNote}]`)
+    }else{
+        pageBehavior.updateAuthorsNote()
+        if (pageBehavior.authorsNote && pageBehavior.authorsNote.length > 0){
+            lines.splice(-3, 0, `[Author's note: ${pageBehavior.authorsNote}]`)
+        }
     }
     
     if(state.memory.frontMemory)
@@ -225,6 +241,14 @@ pageBehavior.createContextText = (text) => {
     
     return [actualMemory, history].join("")
 
+}
+
+pageBehavior.updateMemory = () => {
+    memory = document.getElementById("memoryBox").value
+}
+
+pageBehavior.updateAuthorsNote = () => {
+    pageBehavior.authorsNote = document.getElementById("authorsNoteBox").value
 }
 
 pageBehavior.writeState = () => {
