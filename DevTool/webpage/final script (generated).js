@@ -6,9 +6,6 @@ memory = ""
 
 function InputModifier(text) {
 let targetDummyName={}
-debugMode = true //set to false to deactivate the debug commands
-debugVerbosity = 0 //send to 1 to have some messages send by debug commands 
-
 function isNullOrWhiteSpace( input ) {
 
     if (typeof input === 'undefined' || input == null) return true;
@@ -532,899 +529,93 @@ eventsHandler = {
     }
 }
 
-randomEvents = {
-    name: "randomEvents",
-    requirements: ["preciseMemory", "eventsHandler"],
-	order: [ //place randomEvents before eventsHandler since randomEvents create event
+wish = {
+    name: "wish",
+	requirements: [ 
+		"eventsHandler"
+	],
+	order: [ //place eventsHandler before preciseMemory since eventsHandler modify context in some edge cases
 		{
 			name: "eventsHandler",
 			location: "after" 
 		}
 	],
     init: function(){
-        state.randomEvents.activatedEvents = []
-    },
-    functions: {
-        computeDuration: function(e){
-            let duration = e.duration
-
-            if (e.nextEvent){
-                if (typeof e.nextEvent === "string"){
-                    duration += randomEvents.functions.computeDuration(eventsHandler.utils.eventsDic[e.nextEvent])
-                }else{
-                    duration += randomEvents.functions.computeDuration(e.nextEvent)
-                }
-            }
-            return duration
-        },
-        // launchEvent(re){
-        //     const activatedEvent = {}
-
-        //     if (typeof re.duration === "function"){
-        //         re.duration = re.duration()
-        //     }
-        //     activatedEvent.duration = re.duration
-
-        //     re.StartAt = info.actionCount
-        //     activatedEvent.
-
-        // }
-    },
-    utils: {
-        //proba: 0.3,
-        eventsDic: {}
+        state.wish.eventModifiers = []
     },
     process: function(script){
         if (script == "input" ){
-            state.randomEvents.activatedEvents = state.randomEvents.activatedEvents.filter((ae) => {
-                if (info.actionCount < ae.startAt || ae.startAt + ae.duration + 25 <= info.actionCount){
-                    eventsHandler.functions.removeModifier(ae.modifierNumber)
+            state.wish.eventModifiers = state.wish.eventModifiers.filter((em) => {
+                if (info.actionCount <= em.startAt){
+                    eventsHandler.functions.removeModifier(em.modifierNumber)
                     return false
                 }
                 return true
             })
         }
     },
-    input: function (text) {
-        // state.randomEvents.activatedEvents = state.randomEvents.activatedEvents.filter((ae) => {
-        //     if (ae.startAt < info.actionCount || ae.startAt + ae.duration >= info.actionCount + 25){
-        //         eventsHandler.functions.removeModifier(ae.modifierNumber)
+    input: function(text){
+        // state.wish.eventModifiers = state.wish.eventModifiers.filter((em) => {
+        //     if (em.startAt >= info.actionCount){
+        //         eventsHandler.functions.removeModifier(em.modifierNumber)
         //         return false
         //     }
         //     return true
         // })
-        if(info.actionCount < settings.randomEvents.startAt){
-            return text
-        }
 
-        index = state.randomEvents.activatedEvents.findIndex((ae) => {
-            return (ae.startAt <= info.actionCount &&  info.actionCount < ae.startAt + ae.duration)
-        })
-
-        if (index === -1){
-            const roll = Math.random()
-            if (debugMode){state.message += "randomEvents rolled " + roll + "\n"}
-
-            if (roll <= settings.randomEvents.proba) {
-                let sumWeight = 0
-                for (const e in randomEvents.utils.eventsDic) {
-                    sumWeight += randomEvents.utils.eventsDic[e].weight
-                }
-
-                let selected
-                let selectedName
-                let roll2 = Math.random() * sumWeight
-                if (debugMode){state.message += "randomEvents chose event " + roll2 + "\n"}
-
-                for (const e in randomEvents.utils.eventsDic) {
-                    if (roll2 <= randomEvents.utils.eventsDic[e].weight) {
-                        selected = randomEvents.utils.eventsDic[e]
-                        selectedName = e
-                        break
-                    } else {
-                        roll2 -= randomEvents.utils.eventsDic[e].weight
+        const lowered = text.toLowerCase()
+        if (lowered.includes('you wish')) {
+            state.wish.eventModifiers.push({
+                startAt: info.actionCount,
+                modifierNumber: eventsHandler.functions.modifyEvent({
+                    eventName: "wish",
+                    properties: {
+                        startAt: info.actionCount
                     }
-                }
-
-
-                if(selected && selected.eventName && eventsHandler.utils.eventsDic[selected.eventName]){
-                    const theEvent = eventsHandler.utils.eventsDic[selected.eventName]
-                    const modifier = {eventName: selected.eventName}
-                    modifier.properties = selected.modifyProperties ? selected.modifyProperties : {}
-                    modifier.properties.startAt = info.actionCount
-
-                    const activatedEvent = {
-                        modifierNumber: eventsHandler.functions.modifyEvent(modifier, true),
-                        startAt: info.actionCount,
-                        duration: randomEvents.functions.computeDuration(theEvent)
+                }, true)
+            })
+        }else if (lowered.includes('you hope')) {
+            state.wish.eventModifiers.push({
+                startAt: info.actionCount,
+                modifierNumber: eventsHandler.functions.modifyEvent({
+                    eventName: "hope",
+                    properties: {
+                        startAt: info.actionCount
                     }
-                    // activatedEvent.modifierNumber = eventsHandler.functions.modifyEvent({
-                        //     eventName: selected.eventName,
-                        //     properties: {startAt: info.actionCount}
-                        // })
-                    // activatedEvent.startAt = info.actionCount
-                    // activatedEvent.duration = randomEvents.functions.computeDuration(theEvent)
-                    state.randomEvents.activatedEvents.push(activatedEvent)
-                    
-                    //theEvent.startAt = info.actionCount
-                    
-                    if (selected.instructionModifier){
-                        const activatedEvent2 = {
-                            modifierNumber: eventsHandler.functions.addModifier(selected.instructionModifier),
-                            startAt: activatedEvent.startAt,
-                            duration: activatedEvent.duration
-                        }
-                        state.randomEvents.activatedEvents.push(selected.instructionModifier)
-                    
-                        //TODO
-                        eventsHandler.functions.applyInstructionModifier(modifier)
-                    }
-                }
-            }
+                }, true)
+            })
         }
 
         return text
-    },
-    settings: [
-        {name:"proba", default:0.33},
-        {name:"startAt", default:1}
-    ],
+    }
 }
-
 
 eventsHandler.utils.eventsDic = {
-    randomEvent1: {
-        duration: 2,
-        visibleStart: {
-            text: "text displayed at the beginning of randomEvent1 if the last sentence ended.",
-            alternateText: "text displayed after the first line break of answer if the last sentence didn't end."
-        },
-        memory: {
-            text: "[Author's note: this is the description of randomEvent1.]",
-            position: 1    //fixed position
-        },
-        nextEvent: "event1Continuation"
-    },
-    event1Continuation: {
-        duration: 1,               //overwrite endAt ; more useful if the event doesn't have a fixed start
-        visibleStart: {
-            text: function(){
-                const roll = Math.random() * 3
-                if (roll < 1){
-                    return "event1Continuation starting text."
-                }else if (roll < 2){
-                    return "continuation alternate text."
-                }
-                return "continuation third text."
-            },
-            alternateText: function(){return eventsHandler.utils.eventsDic.event1Continuation.visibleStart.text()}
-        },
-        memory: {
-            text: "[Author's note: this is the description of the continuation.]",
-            cautious: true,
-            alternateText: "[Author's note: this is the description of the continuation.]"
-        },
-    },
-    secondRandomEvent: {
+    wish: {
         duration: 3,
-        visibleStart: function(){
-            possible = [
-                "secondEvent",
-                "alternate second event"
-            ]
-            return possible[Math.floor(Math.random() * possible.length)]
-        },
         memory: {
-            text: "[Author's note: this is the description of the secondEvent.]",
-            alternateText: function(){return eventsHandler.utils.eventsDic.secondRandomEvent.memory.text}
+            text: "[Author's note: the next paragraphs describes how your wish comes true.]",
+            position: -1,
+        },
+    },
+    hope: {
+        duration: 3,
+        memory: {
+            text: "[Author's note: your hope will soon come true! The next paragraphs describe how your hope comes true.]",
+            position: -1,
         },
     }
 }
-
-randomEvents.utils.eventsDic = {
-    randomEvent1: {
-        weight: 2,
-        eventName: "randomEvent1"
-    },
-    secondRandomEvent: {
-        name: "event 2",
-        weight: 1,
-        eventName: "secondRandomEvent"
-    }
-}
-//requires the commandHelper : https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/commandHandler/commandHelper.js
-
-commandHandler = {
-    name:"commandHandler",
-    // init:function(){
-    //   state.commandHandler.commandList = {},
-    //   state.commandHandler.aliasList = {}
-    // },
-    consume:function(input){
-      delete state.commandHandler.isExecutingCommand
-      delete state.commandHandler.currentCommand
-
-      const possibleTextStarts=[
-        {start: "", end: ""}, 
-        {start: "\n> You say \"", end: "\"\n"}, 
-        {start: "\n> You ", end: ".\n"}, 
-        {start: "\n", end: ""}
-      ]
-
-      currentStart = possibleTextStarts.find( 
-        (pts) => input.startsWith(pts.start + settings.commandHandler.prefix)
-      )
-
-      if (currentStart){
-        let consume = true
-        state.commandHandler.isExecutingCommand = true
-        try
-        {
-          //TODO: better handling of the end of the "do/say" than a substring...
-          consume = commandHelper.analyseAndExecuteCommand(
-            input.substring(currentStart.start.length + settings.commandHandler.prefix.length, 
-                            input.length - currentStart.end.length)
-          )
-        }
-        catch (error) 
-        {
-          state.message += `Error: ${error}\n`
-          state.message += `Your message: ${input}\n`
-          state.modules.queryAI = false
-          consume = true
-        }
-        
-        return consume
-      }
-      return false
-    },
-    input: function(input){
-      let modifiedInput = input
-      if (state.commandHandler) {
-        if (state.commandHandler.input) {
-          if (state.commandHandler.input in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.input].input) {
-            try {
-              modifiedInput = commandHelper.commandList[state.commandHandler.input].input(modifiedInput)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in input: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.input
-        delete state.commandHandler.inputArgs
-
-      }
-      return modifiedInput
-    },
-    context: function(context){
-      let modifiedContext = context
-      if (state.commandHandler) {
-        if (state.commandHandler.context) {
-          if (state.commandHandler.context in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.context].context) {
-            try {
-              modifiedContext = commandHelper.commandList[state.commandHandler.context].context(modifiedContext)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in context: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.context
-        delete state.commandHandler.contextArgs
-
-      }
-      return modifiedContext
-    },
-    output: function(output){
-      let modifiedOutput = output
-      if (state.commandHandler) {
-        if (state.commandHandler.output) {
-          if (state.commandHandler.output in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.output].output) {
-            try {
-              modifiedOutput = commandHelper.commandList[state.commandHandler.output].output(modifiedOutput)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in output: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.output
-        delete state.commandHandler.outputArgs
-
-      }
-      return modifiedOutput
-    },
-    queryContext: function(context){
-      let modifiedContext = context
-      if (state.commandHandler) {
-        if (state.commandHandler.context) {
-          if (state.commandHandler.context in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.context].context) {
-            try {
-              modifiedContext = commandHelper.commandList[state.commandHandler.context].context(context)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in context: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.context
-        delete state.commandHandler.contextArgs
-
-      }
-      return modifiedContext
-    },
-    getQuery: function(output){
-      let modifiedOutput = output
-      if (state.commandHandler){
-        if (state.commandHandler.output){
-          if (state.commandHandler.output in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.output].output) {
-            try
-            {
-              modifiedOutput = commandHelper.commandList[state.commandHandler.context].context(context)
-            }
-            catch(error)
-            {
-              state.message += `commandHandler: bug in output: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.output
-        delete state.commandHandler.outputArgs
-
-      }
-      state.modules.forceOutput = modifiedOutput
-    },
-    settings:[{name:"prefix", default:"/"}, {name:"optionPrefix", default:"-"}],
-    info: {
-  		code: "https://github.com/myGat/AI-dungeon/tree/master/DevTool/modules/commandHandler",
-  		description: "A module that handle commands (add new commands in commandHelper.commandList"
-	  },
-    version:"0.1.4",
-    minVersion:"0.1.4",
-
-  }
-
-commandHelper = {
-    commandList: {
-        // requires at least listCommand (to send error messages)
-        listCommands: {
-            name: "listCommands",
-            description: 'display a list of available commands',
-            options: {c: "to make the ai continue the story"},
-            execute: function(args) {
-                if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-                    if (args[0].indexOf("c") >= 0){
-                        this.dontConsume = {input: "deleteInput"};
-                    }
-                }
-
-                let resultList=[]
-                const prefix = settings.commandHandler.prefix
-                for (const c in commandHelper.commandList){
-                  const command = commandHelper.commandList[c]
-                  if (command.hide || command.deactivate || !command.execute)
-                    {}
-                  else if (command.usage)
-                    {resultList.push(`${prefix}${c} ${command.usage}`)}
-                  else
-                    {resultList.push(`${prefix}${c}`)}
-                }//.forEach(c => resultList.append(prefix + c.name))
-                state.message += `List of commands: ${resultList.join(", ")}\n`; 
-            },
-        },
-        //utilitary for some commands with -c option
-        deleteInput: {
-            deactivate: true,
-            input: (input) => {return ""}
-        }
-    }, 
-    aliasList: {
-        lc  : { command:"listCommands"},
-    },
-    
-    analyseAndExecuteCommand: (text) => {
-        //TODO: not transform the text into list, so all functions in commadList can take a text as argument and return a text. 
-        const args = text.split(/ +/); // Create a list of the words provided.
-        const commandNameOrAlias = args.shift(); // Fetch and remove the actual command from the list.
-        //state.message += text
-
-        let consume = true 
-          
-        let commandName, command
-        if (commandNameOrAlias in commandHelper.commandList)
-        {
-          if (!commandHelper.commandList[commandNameOrAlias].deactivate
-              && commandHelper.commandList[commandNameOrAlias].execute){
-            commandName = commandNameOrAlias;
-            command = commandHelper.commandList[commandNameOrAlias];
-          }
-        } else if (commandNameOrAlias in commandHelper.aliasList) {
-          commandName = commandHelper.aliasList[commandNameOrAlias].command
-          if (commandHelper.commandList[commandName] 
-              && !commandHelper.commandList[commandName].deactivate
-              && commandHelper.commandList[commandName].execute){
-            command = commandHelper.commandList[commandName] 
-            if (commandHelper.aliasList[commandNameOrAlias].option) 
-              args.unshift(commandHelper.aliasList[commandNameOrAlias].option)
-          }
-        }
-    
-        if (!command) 
-        {
-            commandHelper.commandList.listCommands.execute()
-            throw `Invalid Command\nCommand ${settings.commandHandler.prefix}${commandNameOrAlias} do not exist.\n`;
-        } // Command is not in the list, lets exit early.
-    
-        let initArgs
-        if (!command.noredo)
-          initArgs = [...args] //args may be modified by the command... (maybe there's a better way?)
-            
-        command.execute(args);
-        state.commandHandler.currentCommand = commandName
-
-        if (command.forceOutput){
-          state.modules.forceOutput = command.forceOutput
-        }
-        if (command.dontConsume){
-          consume = false
-
-          state.commandHandler.input = command.dontConsume.input ?
-              command.dontConsume.input : commandName
-          if (command.dontConsume.inputArgs){
-            state.commandHandler.inputArgs = command.dontConsume.inputArgs
-          }
-    
-          state.commandHandler.context = command.dontConsume.context ?
-              command.dontConsume.context : commandName
-          if (command.dontConsume.contextArgs){
-            state.commandHandler.contextArgs = command.dontConsume.contextArgs
-          }
-
-          state.commandHandler.output = command.dontConsume.output ?
-              command.dontConsume.output : commandName
-          if (command.dontConsume.outputArgs){
-            state.commandHandler.outputArgs = command.dontConsume.outputArgs
-          }
-        }
-        else if (command.queryAI){
-          state.modules.queryAI = true
-
-          state.commandHandler.output = command.queryAI.output ?
-              command.queryAI.output : commandName
-          if (command.queryAI.outputArgs){
-            state.commandHandler.outputArgs = command.queryAI.outputArgs
-          }
-    
-          state.commandHandler.context = command.queryAI.context ?
-              command.queryAI.context : commandName
-          if (command.queryAI.contextArgs){
-            state.commandHandler.contextArgs = command.queryAI.contextArgs
-          }
-        }
-          
-        if (!command.noredo){
-          state.commandHandler.lastCommand = commandName
-          state.commandHandler.lastArgs = initArgs
-        }
-      return consume
-    }
-}
-
-commandHelper.commandList.help = {
-    name: "help",
-    description: 'help about a command.',
-    usage: 'commandName',
-    options: { c: "to make the ai continue the story" },
-    execute: function (args) {
-        const optionPrefix = settings.commandHandler.optionPrefix
-
-        if (args && args[0] && args[0].startsWith(optionPrefix)) {
-            options = args.shift();
-            if (options.indexOf("c") >= 0) {
-                this.dontConsume = { input: "deleteInput" };
-            }
-        }
-
-        const prefix = settings.commandHandler.prefix
-
-        if (!args || args.length == 0) {
-            throw `${prefix}help: no argument provided.`
-        }
-
-        const targetName = args[0].replace(prefix, "")
-        const command = commandHelper.commandList[targetName]
-        if (!command || command.deactivated) {
-            throw `${prefix}help: command ${prefix}${targetName} does not exist.`
-        }
-
-        let resultList = []
-        resultList.push(`help on ${prefix}${targetName}:`)
-        command.description ? resultList.push(`- description: ${command.description}`) : resultList.push(`- no description provided`)
-        command.usage ? resultList.push(`- usage: ${prefix}${targetName} ${command.usage}`) : resultList.push(`- usage: ${prefix}${targetName}`)
-        if (command.options) {
-            let optionList = []
-            for (const opt in command.options) {
-                optionList.push(`${optionPrefix}${opt} ${command.options[opt]}`)
-            }
-            resultList.push(`- option(s): ${optionList.join(" ; ")}`);
-        }
-        const aliases = []
-        for (const alias in commandHelper.aliasList) {
-            if (commandHelper.aliasList[alias].command == targetName) {
-                if (alias.option) {
-                    aliases.push(`${prefix}${alias} : ${prefix}${targetName} ${commandHelper.aliasList[alias].option}`)
-                } else {
-                    aliases.push(`${prefix}${alias} : ${prefix}${targetName}`)
-                }
-            }
-        }
-        if (aliases.length)
-            resultList.push(`- alias(es): ${aliases.join(" ; ")}`)
-        state.message += `${resultList.join("\n")}\n`;
-    },
-}
-
-commandHelper.aliasList.h  = { command:"help"}
-
-commandHelper.commandList.aliases = {
-    name: "aliases", 
-    description: 'List aliases for commands',
-    options: { c: "to make the ai continue the story" },
-    execute: function(args) {
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)) {
-            options = args.shift();
-            if (options.indexOf("c") >= 0) {
-                this.dontConsume = { input: "deleteInput" };
-            }
-        }
-
-        const prefix = settings.commandHandler.prefix
-        const aliases = commandHelper.aliasList
-        const commandList = commandHelper.commandList
-        
-        let resultList = []
-        for (const a in aliases) {
-            if (!commandList[aliases[a].command].hide && !commandList[aliases[a].command].deactivate) {
-                aliases[a].option ?
-                    resultList.push(`${prefix}${a} : ${prefix}${aliases[a].command} ${aliases[a].option}`) :
-                    resultList.push(`${prefix}${a} : ${prefix}${aliases[a].command}`)
-            }
-        }//.forEach(c => resultList.append(prefix + c.name))
-        state.message += `List of aliases: \n${resultList.join(", ")}\n`;
-    }
-}
-
-
-commandHelper.commandList.redo = {
-description: 'redo last command with same argument',
-noredo: true,  //if redoing a redo was allowed, it would remove the last commands info... x)
-    execute: function(args) {
-        const commandList = commandHelper.commandList
-
-        const command = commandList[state.lastCommand]
-        let text
-        if (command) {
-            text = command.execute(state.lastArgs)
-            if (command.dontConsume) {
-                this.dontConsume = {}
-
-                this.dontConsume.input =
-                    command.dontConsume.input ?
-                        command.dontConsume.input : commandName
-                if (command.dontConsume.inputArgs) {
-                    this.dontConsume.inputArgs = command.dontConsume.inputArgs
-                }
-
-                this.dontConsume.context =
-                    command.dontConsume.context ?
-                        command.dontConsume.context : commandName
-                if (command.dontConsume.contextArgs) {
-                    this.dontConsume.contextArgs = command.dontConsume.contextArgs
-                }
-
-                this.dontConsume.output =
-                    command.dontConsume.output ?
-                        command.dontConsume.output : commandName
-                if (command.dontConsume.outputArgs) {
-                    this.dontConsume.outputArgs = command.dontConsume.outputArgs
-                }
-            }else if (command.queryAI){
-                this.queryAI = {}
-
-                this.queryAI.context =
-                    command.queryAI.context ?
-                        command.queryAI.context : commandName
-                if (command.queryAI.contextArgs) {
-                    this.queryAI.contextArgs = command.queryAI.contextArgs
-                }
-
-                this.queryAI.output =
-                    command.queryAI.output ?
-                        command.queryAI.output : commandName
-                if (command.queryAI.outputArgs) {
-                    this.queryAI.outputArgs = command.queryAI.outputArgs
-                }
-
-            }
-        }else {
-            throw "nothing to redo.\n"
-        }
-    }
-}
-//require to set debugMode and debugVerbosity beforehand - see https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/debugCommands/debugMode.js
-
-commandHelper.commandList.execute = {
-    name: "execute", 
-    description: `Execute some javascript instructions. eg /execute state.message = "Hello world!". NB: don't start your javascript with "-", or it will be interpreted as an option of the "esecute" command.`,
-    usage: "javascriptInstruction", 
-    deactivate: !debugMode,
-    options: {
-        c: "to make the ai continue the story",
-        pi: "to create a permanent instruction executed each input phase",
-        pt: "to create a permanent instruction executed each context phase",
-        po: "to create a permanent instruction executed each output phase",
-        pito: "to create a permanent instruction executed each phase"
-    },
-    execute: function(args) {
-        let options
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-            options = args.shift();
-        }
-
-        if (!args || args.length == 0){
-            throw `${settings.commandHandler.prefix}execute: no argument provided.`
-        }
-
-        if (options){
-            if (options.indexOf("c") >= 0){
-                this.dontConsume = {input: "deleteInput"};
-            }
-            if (options.indexOf("p") >= 0){
-                const phases = []
-                if (options.indexOf("i") >= 0){
-                    phases.push("input")
-                }
-                if (options.indexOf("t") >= 0){
-                    phases.push("context")
-                }
-                if (options.indexOf("o") >= 0){
-                    phases.push("output")
-                }
-                if (phases.length == 0){
-                    throw `${settings.commandHandler.prefix}execute: p option requires at least the option i, t or o.`
-                }
-                state.debug.instructions.push({ text: args.join(" "), phases: phases })
-
-                if (debugVerbosity >= 1){
-                    state.message += `${args.join(" ")} added to phase ${phases.join(", ")}\n`; 
-                }
-                return
-            }
-        }
-
-        let instructions = args.join(" ")
-        Function('"use strict";' + instructions )();
-
-        if (debugVerbosity >= 1){
-            state.message += `${instructions} executed\n`; 
-        }
-    }
-}
-
-commandHelper.commandList.display = {
-    name: "display", 
-    description: `display a variable in message. eg /display state.memory.context\nUnfortunaztely I can't decide the timing of the display, so it's at the beginning of eact script.`,
-    usage: "variableName",
-    deactivate: !debugMode,
-    options: {
-        c: "to make the ai continue the story",
-        i: "display only during input phase",
-        t: "display only during context phase",
-        o: "display only during output phase"
-    },
-    execute: function(args) {
-        let phases = []
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-            options = args.shift();
-
-            if (options.indexOf("c") >= 0){
-                this.dontConsume = {input: "deleteInput"};
-            }
-
-            if (options.indexOf("i") >= 0){
-                phases.push("input")
-            }
-            if (options.indexOf("t") >= 0){
-                phases.push("context")
-            }
-            if (options.indexOf("o") >= 0){
-                phases.push("output")
-            }
-        }
-
-        if (!args || args.length == 0){
-            throw `${settings.commandHandler.prefix}${this.name}: no argument provided.`
-        }
-
-        if (phases.length == 0){
-            phases = ["input", "context", "output"]
-        }
-
-        const varPath = args.join(" ")
-        const body = "state.message += `" + varPath + ", ${phase} phase: ${JSON.stringify(" + varPath + ")}\\n`"
-        state.debug.instructions.push({ text: body, phases: phases })
-
-        if (debugVerbosity >= 1){
-            state.message += `${varPath} added in display\n`; 
-        }
-    }
-}
-
-commandHelper.commandList.debugTips = {
-    name: "debugTips", 
-    description: `display few debug tips`,
-    deactivate: !debugMode,
-    options: {
-        c: "to make the ai continue the story",
-    },
-    execute: function(args) {
-        let phases = []
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-            options = args.shift();
-
-            if (options.indexOf("c") >= 0){
-                this.dontConsume = {input: "deleteInput"};
-            }
-        }
-
-        state.message += `Create a Hello world command:\n`
-        state.message += `/exe -pi commandHelper.commandList.hello = { execute: function(args) { state.message = "Hello world!" }}\n`
-        state.message += `Call your Hello world command:\n`
-        state.message += `/hello \n`
-        state.message += `Destroy your Hello world command:\n`
-        state.message += `/exe state.debug.instructions.splice(0,1)\n`
-        state.message += `There's no command to destroy a permanent debug instruction or a display command, but those are stored in state.debug.instructions; destroy them by manipulating the array as above.\n`
-    }
-}
-
-debug = {
-    name: "debug", 
-    // onEnd: true, //maybe I should activate this, so I have "process()" at the start of scripts and "input()/output()/context()" at the end ?
-    init: function(){
-		state.debug.instructions = []
-	}, 
-	functions: {
-		execute: function(phase){
-            for (const instruction of state.debug.instructions) {
-                if (instruction.phases.includes(phase)) {
-                    try {
-                        let evaluation = Function("phase", '"use strict";' + instruction.text)(phase);
-
-                        if (debugVerbosity >= 1){
-                            state.message += `${instruction.text} executed in ${phase}\n`; 
-                        }
-                    } catch (error) {
-                        state.message += `debug, phase ${phase}: cannot execute ${instruction.text}: ${error}\n`
-                    }
-                }
-            }
-        }
-	},
-	// consume: function(input){
-    //     this.functions.execute("input");
-    //     return false}, 
-    /*
-     * unfortunately this won't work: 
-     * only the module asking for a query is called
-     * have to find another way to output stuff during context and output :/
-	queryContext: function(context){
-        this.functions.execute("context");
-        return context
-    }, 
-	getQuery: function(output){
-        this.functions.execute("output");
-    }, 
-    */
-
-    /*
-     * for now, only process is activated.
-	input: function(input){
-        this.functions.execute("input");
-        return input
-    }, 
-	output: function(output){
-        this.functions.execute("output");
-        return output
-    }, 
-	context: function(context){
-        this.functions.execute("context");
-        return context
-    }, 
-    */
-	process: function(type){
-        this.functions.execute(type);
-    }, 
-	info: {
-		code: "https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/debugCommands/debug.js",
-		description: "A module for debug purpose, to execute some command from the story." 
-	},
-	version: "0.1.4", 
-	minVersion: "0.1.4" 
-}
-
-commandHelper.aliasList.exe = { command:"execute"} 
-// requires ../../utils.isNullOrWhiteSpace
-
-commandHelper.commandList.describe = {
-    name: "describe", 
-    description: "Try to force the AI to describe something by temporarily filling the frontMemory",
-    usage: 'text',
-    execute: function (args) {
-        if (!args || args.length == 0) {
-            throw `${settings.commandHandler.prefix}describe: no argument provided.`
-        }
-
-        if (!isNullOrWhiteSpace(state.memory.frontMemory)){
-          this.dontConsume.outputArgs = [state.memory.frontMemory]
-        }
-        const textToDisplay = args.join(' ');
-        state.memory.frontMemory = `[ Author's note: the following paragraphs describe ${textToDisplay}. The text is very descriptive about it. ]`;
-    },
-    dontConsume: {},
-    output: function(output){
-        if (state.commandHandler.outputArgs){
-          state.memory.frontMemory = state.commandHandler.outputArgs[0]
-        }else{
-            delete state.memory.frontMemory
-        }
-        //isNullOrWhitespace(text) ? delete state.memory.frontMemory : state.memory.frontMemory = textToDisplay;
-        return output
-    }
-}
-
-commandHelper.commandList.describePrompt = {
-    name: "describePrompt", 
-    description: 'Try to force the AI to describe something using a visible prompt',
-    usage: 'text',
-    noredo: true, //no need to redo it since the prompt stay
-    execute: function (args) {
-        if (!args || args.length == 0) {
-            throw `${settings.commandHandler.prefix}${this.name}: no argument provided.`
-        }
-
-        this.dontConsume.inputArgs = args;
-    },
-    dontConsume: {},
-    input: function(input){
-        return `\n> Describe ${state.commandHandler.inputArgs.join(' ')}`;
-    }
-}
-
-commandHelper.aliasList.d = { command:"describe"} 
-commandHelper.aliasList.dp = { command:"describePrompt"} 
 
 let settings = {
-  randomEvents: {proba: 0.5}
+  
 }
 
 let modules = [
   {name:"modules",init:function(){state.modules.initialized = true; state.modules.contextIsContinue = true}},
-  debug,
-  commandHandler,
   preciseMemory,
-  eventsHandler, 
-  randomEvents
+  eventsHandler,
+  wish
 ]
 
 
@@ -1637,9 +828,6 @@ return targetDummyName
 }
 function ContextModifier(text) {
 let targetDummyName={}
-debugMode = true //set to false to deactivate the debug commands
-debugVerbosity = 0 //send to 1 to have some messages send by debug commands 
-
 function isNullOrWhiteSpace( input ) {
 
     if (typeof input === 'undefined' || input == null) return true;
@@ -2163,899 +1351,93 @@ eventsHandler = {
     }
 }
 
-randomEvents = {
-    name: "randomEvents",
-    requirements: ["preciseMemory", "eventsHandler"],
-	order: [ //place randomEvents before eventsHandler since randomEvents create event
+wish = {
+    name: "wish",
+	requirements: [ 
+		"eventsHandler"
+	],
+	order: [ //place eventsHandler before preciseMemory since eventsHandler modify context in some edge cases
 		{
 			name: "eventsHandler",
 			location: "after" 
 		}
 	],
     init: function(){
-        state.randomEvents.activatedEvents = []
-    },
-    functions: {
-        computeDuration: function(e){
-            let duration = e.duration
-
-            if (e.nextEvent){
-                if (typeof e.nextEvent === "string"){
-                    duration += randomEvents.functions.computeDuration(eventsHandler.utils.eventsDic[e.nextEvent])
-                }else{
-                    duration += randomEvents.functions.computeDuration(e.nextEvent)
-                }
-            }
-            return duration
-        },
-        // launchEvent(re){
-        //     const activatedEvent = {}
-
-        //     if (typeof re.duration === "function"){
-        //         re.duration = re.duration()
-        //     }
-        //     activatedEvent.duration = re.duration
-
-        //     re.StartAt = info.actionCount
-        //     activatedEvent.
-
-        // }
-    },
-    utils: {
-        //proba: 0.3,
-        eventsDic: {}
+        state.wish.eventModifiers = []
     },
     process: function(script){
         if (script == "input" ){
-            state.randomEvents.activatedEvents = state.randomEvents.activatedEvents.filter((ae) => {
-                if (info.actionCount < ae.startAt || ae.startAt + ae.duration + 25 <= info.actionCount){
-                    eventsHandler.functions.removeModifier(ae.modifierNumber)
+            state.wish.eventModifiers = state.wish.eventModifiers.filter((em) => {
+                if (info.actionCount <= em.startAt){
+                    eventsHandler.functions.removeModifier(em.modifierNumber)
                     return false
                 }
                 return true
             })
         }
     },
-    input: function (text) {
-        // state.randomEvents.activatedEvents = state.randomEvents.activatedEvents.filter((ae) => {
-        //     if (ae.startAt < info.actionCount || ae.startAt + ae.duration >= info.actionCount + 25){
-        //         eventsHandler.functions.removeModifier(ae.modifierNumber)
+    input: function(text){
+        // state.wish.eventModifiers = state.wish.eventModifiers.filter((em) => {
+        //     if (em.startAt >= info.actionCount){
+        //         eventsHandler.functions.removeModifier(em.modifierNumber)
         //         return false
         //     }
         //     return true
         // })
-        if(info.actionCount < settings.randomEvents.startAt){
-            return text
-        }
 
-        index = state.randomEvents.activatedEvents.findIndex((ae) => {
-            return (ae.startAt <= info.actionCount &&  info.actionCount < ae.startAt + ae.duration)
-        })
-
-        if (index === -1){
-            const roll = Math.random()
-            if (debugMode){state.message += "randomEvents rolled " + roll + "\n"}
-
-            if (roll <= settings.randomEvents.proba) {
-                let sumWeight = 0
-                for (const e in randomEvents.utils.eventsDic) {
-                    sumWeight += randomEvents.utils.eventsDic[e].weight
-                }
-
-                let selected
-                let selectedName
-                let roll2 = Math.random() * sumWeight
-                if (debugMode){state.message += "randomEvents chose event " + roll2 + "\n"}
-
-                for (const e in randomEvents.utils.eventsDic) {
-                    if (roll2 <= randomEvents.utils.eventsDic[e].weight) {
-                        selected = randomEvents.utils.eventsDic[e]
-                        selectedName = e
-                        break
-                    } else {
-                        roll2 -= randomEvents.utils.eventsDic[e].weight
+        const lowered = text.toLowerCase()
+        if (lowered.includes('you wish')) {
+            state.wish.eventModifiers.push({
+                startAt: info.actionCount,
+                modifierNumber: eventsHandler.functions.modifyEvent({
+                    eventName: "wish",
+                    properties: {
+                        startAt: info.actionCount
                     }
-                }
-
-
-                if(selected && selected.eventName && eventsHandler.utils.eventsDic[selected.eventName]){
-                    const theEvent = eventsHandler.utils.eventsDic[selected.eventName]
-                    const modifier = {eventName: selected.eventName}
-                    modifier.properties = selected.modifyProperties ? selected.modifyProperties : {}
-                    modifier.properties.startAt = info.actionCount
-
-                    const activatedEvent = {
-                        modifierNumber: eventsHandler.functions.modifyEvent(modifier, true),
-                        startAt: info.actionCount,
-                        duration: randomEvents.functions.computeDuration(theEvent)
+                }, true)
+            })
+        }else if (lowered.includes('you hope')) {
+            state.wish.eventModifiers.push({
+                startAt: info.actionCount,
+                modifierNumber: eventsHandler.functions.modifyEvent({
+                    eventName: "hope",
+                    properties: {
+                        startAt: info.actionCount
                     }
-                    // activatedEvent.modifierNumber = eventsHandler.functions.modifyEvent({
-                        //     eventName: selected.eventName,
-                        //     properties: {startAt: info.actionCount}
-                        // })
-                    // activatedEvent.startAt = info.actionCount
-                    // activatedEvent.duration = randomEvents.functions.computeDuration(theEvent)
-                    state.randomEvents.activatedEvents.push(activatedEvent)
-                    
-                    //theEvent.startAt = info.actionCount
-                    
-                    if (selected.instructionModifier){
-                        const activatedEvent2 = {
-                            modifierNumber: eventsHandler.functions.addModifier(selected.instructionModifier),
-                            startAt: activatedEvent.startAt,
-                            duration: activatedEvent.duration
-                        }
-                        state.randomEvents.activatedEvents.push(selected.instructionModifier)
-                    
-                        //TODO
-                        eventsHandler.functions.applyInstructionModifier(modifier)
-                    }
-                }
-            }
+                }, true)
+            })
         }
 
         return text
-    },
-    settings: [
-        {name:"proba", default:0.33},
-        {name:"startAt", default:1}
-    ],
+    }
 }
-
 
 eventsHandler.utils.eventsDic = {
-    randomEvent1: {
-        duration: 2,
-        visibleStart: {
-            text: "text displayed at the beginning of randomEvent1 if the last sentence ended.",
-            alternateText: "text displayed after the first line break of answer if the last sentence didn't end."
-        },
-        memory: {
-            text: "[Author's note: this is the description of randomEvent1.]",
-            position: 1    //fixed position
-        },
-        nextEvent: "event1Continuation"
-    },
-    event1Continuation: {
-        duration: 1,               //overwrite endAt ; more useful if the event doesn't have a fixed start
-        visibleStart: {
-            text: function(){
-                const roll = Math.random() * 3
-                if (roll < 1){
-                    return "event1Continuation starting text."
-                }else if (roll < 2){
-                    return "continuation alternate text."
-                }
-                return "continuation third text."
-            },
-            alternateText: function(){return eventsHandler.utils.eventsDic.event1Continuation.visibleStart.text()}
-        },
-        memory: {
-            text: "[Author's note: this is the description of the continuation.]",
-            cautious: true,
-            alternateText: "[Author's note: this is the description of the continuation.]"
-        },
-    },
-    secondRandomEvent: {
+    wish: {
         duration: 3,
-        visibleStart: function(){
-            possible = [
-                "secondEvent",
-                "alternate second event"
-            ]
-            return possible[Math.floor(Math.random() * possible.length)]
-        },
         memory: {
-            text: "[Author's note: this is the description of the secondEvent.]",
-            alternateText: function(){return eventsHandler.utils.eventsDic.secondRandomEvent.memory.text}
+            text: "[Author's note: the next paragraphs describes how your wish comes true.]",
+            position: -1,
+        },
+    },
+    hope: {
+        duration: 3,
+        memory: {
+            text: "[Author's note: your hope will soon come true! The next paragraphs describe how your hope comes true.]",
+            position: -1,
         },
     }
 }
-
-randomEvents.utils.eventsDic = {
-    randomEvent1: {
-        weight: 2,
-        eventName: "randomEvent1"
-    },
-    secondRandomEvent: {
-        name: "event 2",
-        weight: 1,
-        eventName: "secondRandomEvent"
-    }
-}
-//requires the commandHelper : https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/commandHandler/commandHelper.js
-
-commandHandler = {
-    name:"commandHandler",
-    // init:function(){
-    //   state.commandHandler.commandList = {},
-    //   state.commandHandler.aliasList = {}
-    // },
-    consume:function(input){
-      delete state.commandHandler.isExecutingCommand
-      delete state.commandHandler.currentCommand
-
-      const possibleTextStarts=[
-        {start: "", end: ""}, 
-        {start: "\n> You say \"", end: "\"\n"}, 
-        {start: "\n> You ", end: ".\n"}, 
-        {start: "\n", end: ""}
-      ]
-
-      currentStart = possibleTextStarts.find( 
-        (pts) => input.startsWith(pts.start + settings.commandHandler.prefix)
-      )
-
-      if (currentStart){
-        let consume = true
-        state.commandHandler.isExecutingCommand = true
-        try
-        {
-          //TODO: better handling of the end of the "do/say" than a substring...
-          consume = commandHelper.analyseAndExecuteCommand(
-            input.substring(currentStart.start.length + settings.commandHandler.prefix.length, 
-                            input.length - currentStart.end.length)
-          )
-        }
-        catch (error) 
-        {
-          state.message += `Error: ${error}\n`
-          state.message += `Your message: ${input}\n`
-          state.modules.queryAI = false
-          consume = true
-        }
-        
-        return consume
-      }
-      return false
-    },
-    input: function(input){
-      let modifiedInput = input
-      if (state.commandHandler) {
-        if (state.commandHandler.input) {
-          if (state.commandHandler.input in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.input].input) {
-            try {
-              modifiedInput = commandHelper.commandList[state.commandHandler.input].input(modifiedInput)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in input: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.input
-        delete state.commandHandler.inputArgs
-
-      }
-      return modifiedInput
-    },
-    context: function(context){
-      let modifiedContext = context
-      if (state.commandHandler) {
-        if (state.commandHandler.context) {
-          if (state.commandHandler.context in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.context].context) {
-            try {
-              modifiedContext = commandHelper.commandList[state.commandHandler.context].context(modifiedContext)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in context: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.context
-        delete state.commandHandler.contextArgs
-
-      }
-      return modifiedContext
-    },
-    output: function(output){
-      let modifiedOutput = output
-      if (state.commandHandler) {
-        if (state.commandHandler.output) {
-          if (state.commandHandler.output in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.output].output) {
-            try {
-              modifiedOutput = commandHelper.commandList[state.commandHandler.output].output(modifiedOutput)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in output: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.output
-        delete state.commandHandler.outputArgs
-
-      }
-      return modifiedOutput
-    },
-    queryContext: function(context){
-      let modifiedContext = context
-      if (state.commandHandler) {
-        if (state.commandHandler.context) {
-          if (state.commandHandler.context in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.context].context) {
-            try {
-              modifiedContext = commandHelper.commandList[state.commandHandler.context].context(context)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in context: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.context
-        delete state.commandHandler.contextArgs
-
-      }
-      return modifiedContext
-    },
-    getQuery: function(output){
-      let modifiedOutput = output
-      if (state.commandHandler){
-        if (state.commandHandler.output){
-          if (state.commandHandler.output in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.output].output) {
-            try
-            {
-              modifiedOutput = commandHelper.commandList[state.commandHandler.context].context(context)
-            }
-            catch(error)
-            {
-              state.message += `commandHandler: bug in output: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.output
-        delete state.commandHandler.outputArgs
-
-      }
-      state.modules.forceOutput = modifiedOutput
-    },
-    settings:[{name:"prefix", default:"/"}, {name:"optionPrefix", default:"-"}],
-    info: {
-  		code: "https://github.com/myGat/AI-dungeon/tree/master/DevTool/modules/commandHandler",
-  		description: "A module that handle commands (add new commands in commandHelper.commandList"
-	  },
-    version:"0.1.4",
-    minVersion:"0.1.4",
-
-  }
-
-commandHelper = {
-    commandList: {
-        // requires at least listCommand (to send error messages)
-        listCommands: {
-            name: "listCommands",
-            description: 'display a list of available commands',
-            options: {c: "to make the ai continue the story"},
-            execute: function(args) {
-                if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-                    if (args[0].indexOf("c") >= 0){
-                        this.dontConsume = {input: "deleteInput"};
-                    }
-                }
-
-                let resultList=[]
-                const prefix = settings.commandHandler.prefix
-                for (const c in commandHelper.commandList){
-                  const command = commandHelper.commandList[c]
-                  if (command.hide || command.deactivate || !command.execute)
-                    {}
-                  else if (command.usage)
-                    {resultList.push(`${prefix}${c} ${command.usage}`)}
-                  else
-                    {resultList.push(`${prefix}${c}`)}
-                }//.forEach(c => resultList.append(prefix + c.name))
-                state.message += `List of commands: ${resultList.join(", ")}\n`; 
-            },
-        },
-        //utilitary for some commands with -c option
-        deleteInput: {
-            deactivate: true,
-            input: (input) => {return ""}
-        }
-    }, 
-    aliasList: {
-        lc  : { command:"listCommands"},
-    },
-    
-    analyseAndExecuteCommand: (text) => {
-        //TODO: not transform the text into list, so all functions in commadList can take a text as argument and return a text. 
-        const args = text.split(/ +/); // Create a list of the words provided.
-        const commandNameOrAlias = args.shift(); // Fetch and remove the actual command from the list.
-        //state.message += text
-
-        let consume = true 
-          
-        let commandName, command
-        if (commandNameOrAlias in commandHelper.commandList)
-        {
-          if (!commandHelper.commandList[commandNameOrAlias].deactivate
-              && commandHelper.commandList[commandNameOrAlias].execute){
-            commandName = commandNameOrAlias;
-            command = commandHelper.commandList[commandNameOrAlias];
-          }
-        } else if (commandNameOrAlias in commandHelper.aliasList) {
-          commandName = commandHelper.aliasList[commandNameOrAlias].command
-          if (commandHelper.commandList[commandName] 
-              && !commandHelper.commandList[commandName].deactivate
-              && commandHelper.commandList[commandName].execute){
-            command = commandHelper.commandList[commandName] 
-            if (commandHelper.aliasList[commandNameOrAlias].option) 
-              args.unshift(commandHelper.aliasList[commandNameOrAlias].option)
-          }
-        }
-    
-        if (!command) 
-        {
-            commandHelper.commandList.listCommands.execute()
-            throw `Invalid Command\nCommand ${settings.commandHandler.prefix}${commandNameOrAlias} do not exist.\n`;
-        } // Command is not in the list, lets exit early.
-    
-        let initArgs
-        if (!command.noredo)
-          initArgs = [...args] //args may be modified by the command... (maybe there's a better way?)
-            
-        command.execute(args);
-        state.commandHandler.currentCommand = commandName
-
-        if (command.forceOutput){
-          state.modules.forceOutput = command.forceOutput
-        }
-        if (command.dontConsume){
-          consume = false
-
-          state.commandHandler.input = command.dontConsume.input ?
-              command.dontConsume.input : commandName
-          if (command.dontConsume.inputArgs){
-            state.commandHandler.inputArgs = command.dontConsume.inputArgs
-          }
-    
-          state.commandHandler.context = command.dontConsume.context ?
-              command.dontConsume.context : commandName
-          if (command.dontConsume.contextArgs){
-            state.commandHandler.contextArgs = command.dontConsume.contextArgs
-          }
-
-          state.commandHandler.output = command.dontConsume.output ?
-              command.dontConsume.output : commandName
-          if (command.dontConsume.outputArgs){
-            state.commandHandler.outputArgs = command.dontConsume.outputArgs
-          }
-        }
-        else if (command.queryAI){
-          state.modules.queryAI = true
-
-          state.commandHandler.output = command.queryAI.output ?
-              command.queryAI.output : commandName
-          if (command.queryAI.outputArgs){
-            state.commandHandler.outputArgs = command.queryAI.outputArgs
-          }
-    
-          state.commandHandler.context = command.queryAI.context ?
-              command.queryAI.context : commandName
-          if (command.queryAI.contextArgs){
-            state.commandHandler.contextArgs = command.queryAI.contextArgs
-          }
-        }
-          
-        if (!command.noredo){
-          state.commandHandler.lastCommand = commandName
-          state.commandHandler.lastArgs = initArgs
-        }
-      return consume
-    }
-}
-
-commandHelper.commandList.help = {
-    name: "help",
-    description: 'help about a command.',
-    usage: 'commandName',
-    options: { c: "to make the ai continue the story" },
-    execute: function (args) {
-        const optionPrefix = settings.commandHandler.optionPrefix
-
-        if (args && args[0] && args[0].startsWith(optionPrefix)) {
-            options = args.shift();
-            if (options.indexOf("c") >= 0) {
-                this.dontConsume = { input: "deleteInput" };
-            }
-        }
-
-        const prefix = settings.commandHandler.prefix
-
-        if (!args || args.length == 0) {
-            throw `${prefix}help: no argument provided.`
-        }
-
-        const targetName = args[0].replace(prefix, "")
-        const command = commandHelper.commandList[targetName]
-        if (!command || command.deactivated) {
-            throw `${prefix}help: command ${prefix}${targetName} does not exist.`
-        }
-
-        let resultList = []
-        resultList.push(`help on ${prefix}${targetName}:`)
-        command.description ? resultList.push(`- description: ${command.description}`) : resultList.push(`- no description provided`)
-        command.usage ? resultList.push(`- usage: ${prefix}${targetName} ${command.usage}`) : resultList.push(`- usage: ${prefix}${targetName}`)
-        if (command.options) {
-            let optionList = []
-            for (const opt in command.options) {
-                optionList.push(`${optionPrefix}${opt} ${command.options[opt]}`)
-            }
-            resultList.push(`- option(s): ${optionList.join(" ; ")}`);
-        }
-        const aliases = []
-        for (const alias in commandHelper.aliasList) {
-            if (commandHelper.aliasList[alias].command == targetName) {
-                if (alias.option) {
-                    aliases.push(`${prefix}${alias} : ${prefix}${targetName} ${commandHelper.aliasList[alias].option}`)
-                } else {
-                    aliases.push(`${prefix}${alias} : ${prefix}${targetName}`)
-                }
-            }
-        }
-        if (aliases.length)
-            resultList.push(`- alias(es): ${aliases.join(" ; ")}`)
-        state.message += `${resultList.join("\n")}\n`;
-    },
-}
-
-commandHelper.aliasList.h  = { command:"help"}
-
-commandHelper.commandList.aliases = {
-    name: "aliases", 
-    description: 'List aliases for commands',
-    options: { c: "to make the ai continue the story" },
-    execute: function(args) {
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)) {
-            options = args.shift();
-            if (options.indexOf("c") >= 0) {
-                this.dontConsume = { input: "deleteInput" };
-            }
-        }
-
-        const prefix = settings.commandHandler.prefix
-        const aliases = commandHelper.aliasList
-        const commandList = commandHelper.commandList
-        
-        let resultList = []
-        for (const a in aliases) {
-            if (!commandList[aliases[a].command].hide && !commandList[aliases[a].command].deactivate) {
-                aliases[a].option ?
-                    resultList.push(`${prefix}${a} : ${prefix}${aliases[a].command} ${aliases[a].option}`) :
-                    resultList.push(`${prefix}${a} : ${prefix}${aliases[a].command}`)
-            }
-        }//.forEach(c => resultList.append(prefix + c.name))
-        state.message += `List of aliases: \n${resultList.join(", ")}\n`;
-    }
-}
-
-
-commandHelper.commandList.redo = {
-description: 'redo last command with same argument',
-noredo: true,  //if redoing a redo was allowed, it would remove the last commands info... x)
-    execute: function(args) {
-        const commandList = commandHelper.commandList
-
-        const command = commandList[state.lastCommand]
-        let text
-        if (command) {
-            text = command.execute(state.lastArgs)
-            if (command.dontConsume) {
-                this.dontConsume = {}
-
-                this.dontConsume.input =
-                    command.dontConsume.input ?
-                        command.dontConsume.input : commandName
-                if (command.dontConsume.inputArgs) {
-                    this.dontConsume.inputArgs = command.dontConsume.inputArgs
-                }
-
-                this.dontConsume.context =
-                    command.dontConsume.context ?
-                        command.dontConsume.context : commandName
-                if (command.dontConsume.contextArgs) {
-                    this.dontConsume.contextArgs = command.dontConsume.contextArgs
-                }
-
-                this.dontConsume.output =
-                    command.dontConsume.output ?
-                        command.dontConsume.output : commandName
-                if (command.dontConsume.outputArgs) {
-                    this.dontConsume.outputArgs = command.dontConsume.outputArgs
-                }
-            }else if (command.queryAI){
-                this.queryAI = {}
-
-                this.queryAI.context =
-                    command.queryAI.context ?
-                        command.queryAI.context : commandName
-                if (command.queryAI.contextArgs) {
-                    this.queryAI.contextArgs = command.queryAI.contextArgs
-                }
-
-                this.queryAI.output =
-                    command.queryAI.output ?
-                        command.queryAI.output : commandName
-                if (command.queryAI.outputArgs) {
-                    this.queryAI.outputArgs = command.queryAI.outputArgs
-                }
-
-            }
-        }else {
-            throw "nothing to redo.\n"
-        }
-    }
-}
-//require to set debugMode and debugVerbosity beforehand - see https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/debugCommands/debugMode.js
-
-commandHelper.commandList.execute = {
-    name: "execute", 
-    description: `Execute some javascript instructions. eg /execute state.message = "Hello world!". NB: don't start your javascript with "-", or it will be interpreted as an option of the "esecute" command.`,
-    usage: "javascriptInstruction", 
-    deactivate: !debugMode,
-    options: {
-        c: "to make the ai continue the story",
-        pi: "to create a permanent instruction executed each input phase",
-        pt: "to create a permanent instruction executed each context phase",
-        po: "to create a permanent instruction executed each output phase",
-        pito: "to create a permanent instruction executed each phase"
-    },
-    execute: function(args) {
-        let options
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-            options = args.shift();
-        }
-
-        if (!args || args.length == 0){
-            throw `${settings.commandHandler.prefix}execute: no argument provided.`
-        }
-
-        if (options){
-            if (options.indexOf("c") >= 0){
-                this.dontConsume = {input: "deleteInput"};
-            }
-            if (options.indexOf("p") >= 0){
-                const phases = []
-                if (options.indexOf("i") >= 0){
-                    phases.push("input")
-                }
-                if (options.indexOf("t") >= 0){
-                    phases.push("context")
-                }
-                if (options.indexOf("o") >= 0){
-                    phases.push("output")
-                }
-                if (phases.length == 0){
-                    throw `${settings.commandHandler.prefix}execute: p option requires at least the option i, t or o.`
-                }
-                state.debug.instructions.push({ text: args.join(" "), phases: phases })
-
-                if (debugVerbosity >= 1){
-                    state.message += `${args.join(" ")} added to phase ${phases.join(", ")}\n`; 
-                }
-                return
-            }
-        }
-
-        let instructions = args.join(" ")
-        Function('"use strict";' + instructions )();
-
-        if (debugVerbosity >= 1){
-            state.message += `${instructions} executed\n`; 
-        }
-    }
-}
-
-commandHelper.commandList.display = {
-    name: "display", 
-    description: `display a variable in message. eg /display state.memory.context\nUnfortunaztely I can't decide the timing of the display, so it's at the beginning of eact script.`,
-    usage: "variableName",
-    deactivate: !debugMode,
-    options: {
-        c: "to make the ai continue the story",
-        i: "display only during input phase",
-        t: "display only during context phase",
-        o: "display only during output phase"
-    },
-    execute: function(args) {
-        let phases = []
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-            options = args.shift();
-
-            if (options.indexOf("c") >= 0){
-                this.dontConsume = {input: "deleteInput"};
-            }
-
-            if (options.indexOf("i") >= 0){
-                phases.push("input")
-            }
-            if (options.indexOf("t") >= 0){
-                phases.push("context")
-            }
-            if (options.indexOf("o") >= 0){
-                phases.push("output")
-            }
-        }
-
-        if (!args || args.length == 0){
-            throw `${settings.commandHandler.prefix}${this.name}: no argument provided.`
-        }
-
-        if (phases.length == 0){
-            phases = ["input", "context", "output"]
-        }
-
-        const varPath = args.join(" ")
-        const body = "state.message += `" + varPath + ", ${phase} phase: ${JSON.stringify(" + varPath + ")}\\n`"
-        state.debug.instructions.push({ text: body, phases: phases })
-
-        if (debugVerbosity >= 1){
-            state.message += `${varPath} added in display\n`; 
-        }
-    }
-}
-
-commandHelper.commandList.debugTips = {
-    name: "debugTips", 
-    description: `display few debug tips`,
-    deactivate: !debugMode,
-    options: {
-        c: "to make the ai continue the story",
-    },
-    execute: function(args) {
-        let phases = []
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-            options = args.shift();
-
-            if (options.indexOf("c") >= 0){
-                this.dontConsume = {input: "deleteInput"};
-            }
-        }
-
-        state.message += `Create a Hello world command:\n`
-        state.message += `/exe -pi commandHelper.commandList.hello = { execute: function(args) { state.message = "Hello world!" }}\n`
-        state.message += `Call your Hello world command:\n`
-        state.message += `/hello \n`
-        state.message += `Destroy your Hello world command:\n`
-        state.message += `/exe state.debug.instructions.splice(0,1)\n`
-        state.message += `There's no command to destroy a permanent debug instruction or a display command, but those are stored in state.debug.instructions; destroy them by manipulating the array as above.\n`
-    }
-}
-
-debug = {
-    name: "debug", 
-    // onEnd: true, //maybe I should activate this, so I have "process()" at the start of scripts and "input()/output()/context()" at the end ?
-    init: function(){
-		state.debug.instructions = []
-	}, 
-	functions: {
-		execute: function(phase){
-            for (const instruction of state.debug.instructions) {
-                if (instruction.phases.includes(phase)) {
-                    try {
-                        let evaluation = Function("phase", '"use strict";' + instruction.text)(phase);
-
-                        if (debugVerbosity >= 1){
-                            state.message += `${instruction.text} executed in ${phase}\n`; 
-                        }
-                    } catch (error) {
-                        state.message += `debug, phase ${phase}: cannot execute ${instruction.text}: ${error}\n`
-                    }
-                }
-            }
-        }
-	},
-	// consume: function(input){
-    //     this.functions.execute("input");
-    //     return false}, 
-    /*
-     * unfortunately this won't work: 
-     * only the module asking for a query is called
-     * have to find another way to output stuff during context and output :/
-	queryContext: function(context){
-        this.functions.execute("context");
-        return context
-    }, 
-	getQuery: function(output){
-        this.functions.execute("output");
-    }, 
-    */
-
-    /*
-     * for now, only process is activated.
-	input: function(input){
-        this.functions.execute("input");
-        return input
-    }, 
-	output: function(output){
-        this.functions.execute("output");
-        return output
-    }, 
-	context: function(context){
-        this.functions.execute("context");
-        return context
-    }, 
-    */
-	process: function(type){
-        this.functions.execute(type);
-    }, 
-	info: {
-		code: "https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/debugCommands/debug.js",
-		description: "A module for debug purpose, to execute some command from the story." 
-	},
-	version: "0.1.4", 
-	minVersion: "0.1.4" 
-}
-
-commandHelper.aliasList.exe = { command:"execute"} 
-// requires ../../utils.isNullOrWhiteSpace
-
-commandHelper.commandList.describe = {
-    name: "describe", 
-    description: "Try to force the AI to describe something by temporarily filling the frontMemory",
-    usage: 'text',
-    execute: function (args) {
-        if (!args || args.length == 0) {
-            throw `${settings.commandHandler.prefix}describe: no argument provided.`
-        }
-
-        if (!isNullOrWhiteSpace(state.memory.frontMemory)){
-          this.dontConsume.outputArgs = [state.memory.frontMemory]
-        }
-        const textToDisplay = args.join(' ');
-        state.memory.frontMemory = `[ Author's note: the following paragraphs describe ${textToDisplay}. The text is very descriptive about it. ]`;
-    },
-    dontConsume: {},
-    output: function(output){
-        if (state.commandHandler.outputArgs){
-          state.memory.frontMemory = state.commandHandler.outputArgs[0]
-        }else{
-            delete state.memory.frontMemory
-        }
-        //isNullOrWhitespace(text) ? delete state.memory.frontMemory : state.memory.frontMemory = textToDisplay;
-        return output
-    }
-}
-
-commandHelper.commandList.describePrompt = {
-    name: "describePrompt", 
-    description: 'Try to force the AI to describe something using a visible prompt',
-    usage: 'text',
-    noredo: true, //no need to redo it since the prompt stay
-    execute: function (args) {
-        if (!args || args.length == 0) {
-            throw `${settings.commandHandler.prefix}${this.name}: no argument provided.`
-        }
-
-        this.dontConsume.inputArgs = args;
-    },
-    dontConsume: {},
-    input: function(input){
-        return `\n> Describe ${state.commandHandler.inputArgs.join(' ')}`;
-    }
-}
-
-commandHelper.aliasList.d = { command:"describe"} 
-commandHelper.aliasList.dp = { command:"describePrompt"} 
 
 let settings = {
-  randomEvents: {proba: 0.5}
+  
 }
 
 let modules = [
   {name:"modules",init:function(){state.modules.initialized = true; state.modules.contextIsContinue = true}},
-  debug,
-  commandHandler,
   preciseMemory,
-  eventsHandler, 
-  randomEvents
+  eventsHandler,
+  wish
 ]
 
 
@@ -3279,9 +1661,6 @@ return targetDummyName
 }
 function OutputModifier(text) {
 let targetDummyName={}
-debugMode = true //set to false to deactivate the debug commands
-debugVerbosity = 0 //send to 1 to have some messages send by debug commands 
-
 function isNullOrWhiteSpace( input ) {
 
     if (typeof input === 'undefined' || input == null) return true;
@@ -3805,899 +2184,93 @@ eventsHandler = {
     }
 }
 
-randomEvents = {
-    name: "randomEvents",
-    requirements: ["preciseMemory", "eventsHandler"],
-	order: [ //place randomEvents before eventsHandler since randomEvents create event
+wish = {
+    name: "wish",
+	requirements: [ 
+		"eventsHandler"
+	],
+	order: [ //place eventsHandler before preciseMemory since eventsHandler modify context in some edge cases
 		{
 			name: "eventsHandler",
 			location: "after" 
 		}
 	],
     init: function(){
-        state.randomEvents.activatedEvents = []
-    },
-    functions: {
-        computeDuration: function(e){
-            let duration = e.duration
-
-            if (e.nextEvent){
-                if (typeof e.nextEvent === "string"){
-                    duration += randomEvents.functions.computeDuration(eventsHandler.utils.eventsDic[e.nextEvent])
-                }else{
-                    duration += randomEvents.functions.computeDuration(e.nextEvent)
-                }
-            }
-            return duration
-        },
-        // launchEvent(re){
-        //     const activatedEvent = {}
-
-        //     if (typeof re.duration === "function"){
-        //         re.duration = re.duration()
-        //     }
-        //     activatedEvent.duration = re.duration
-
-        //     re.StartAt = info.actionCount
-        //     activatedEvent.
-
-        // }
-    },
-    utils: {
-        //proba: 0.3,
-        eventsDic: {}
+        state.wish.eventModifiers = []
     },
     process: function(script){
         if (script == "input" ){
-            state.randomEvents.activatedEvents = state.randomEvents.activatedEvents.filter((ae) => {
-                if (info.actionCount < ae.startAt || ae.startAt + ae.duration + 25 <= info.actionCount){
-                    eventsHandler.functions.removeModifier(ae.modifierNumber)
+            state.wish.eventModifiers = state.wish.eventModifiers.filter((em) => {
+                if (info.actionCount <= em.startAt){
+                    eventsHandler.functions.removeModifier(em.modifierNumber)
                     return false
                 }
                 return true
             })
         }
     },
-    input: function (text) {
-        // state.randomEvents.activatedEvents = state.randomEvents.activatedEvents.filter((ae) => {
-        //     if (ae.startAt < info.actionCount || ae.startAt + ae.duration >= info.actionCount + 25){
-        //         eventsHandler.functions.removeModifier(ae.modifierNumber)
+    input: function(text){
+        // state.wish.eventModifiers = state.wish.eventModifiers.filter((em) => {
+        //     if (em.startAt >= info.actionCount){
+        //         eventsHandler.functions.removeModifier(em.modifierNumber)
         //         return false
         //     }
         //     return true
         // })
-        if(info.actionCount < settings.randomEvents.startAt){
-            return text
-        }
 
-        index = state.randomEvents.activatedEvents.findIndex((ae) => {
-            return (ae.startAt <= info.actionCount &&  info.actionCount < ae.startAt + ae.duration)
-        })
-
-        if (index === -1){
-            const roll = Math.random()
-            if (debugMode){state.message += "randomEvents rolled " + roll + "\n"}
-
-            if (roll <= settings.randomEvents.proba) {
-                let sumWeight = 0
-                for (const e in randomEvents.utils.eventsDic) {
-                    sumWeight += randomEvents.utils.eventsDic[e].weight
-                }
-
-                let selected
-                let selectedName
-                let roll2 = Math.random() * sumWeight
-                if (debugMode){state.message += "randomEvents chose event " + roll2 + "\n"}
-
-                for (const e in randomEvents.utils.eventsDic) {
-                    if (roll2 <= randomEvents.utils.eventsDic[e].weight) {
-                        selected = randomEvents.utils.eventsDic[e]
-                        selectedName = e
-                        break
-                    } else {
-                        roll2 -= randomEvents.utils.eventsDic[e].weight
+        const lowered = text.toLowerCase()
+        if (lowered.includes('you wish')) {
+            state.wish.eventModifiers.push({
+                startAt: info.actionCount,
+                modifierNumber: eventsHandler.functions.modifyEvent({
+                    eventName: "wish",
+                    properties: {
+                        startAt: info.actionCount
                     }
-                }
-
-
-                if(selected && selected.eventName && eventsHandler.utils.eventsDic[selected.eventName]){
-                    const theEvent = eventsHandler.utils.eventsDic[selected.eventName]
-                    const modifier = {eventName: selected.eventName}
-                    modifier.properties = selected.modifyProperties ? selected.modifyProperties : {}
-                    modifier.properties.startAt = info.actionCount
-
-                    const activatedEvent = {
-                        modifierNumber: eventsHandler.functions.modifyEvent(modifier, true),
-                        startAt: info.actionCount,
-                        duration: randomEvents.functions.computeDuration(theEvent)
+                }, true)
+            })
+        }else if (lowered.includes('you hope')) {
+            state.wish.eventModifiers.push({
+                startAt: info.actionCount,
+                modifierNumber: eventsHandler.functions.modifyEvent({
+                    eventName: "hope",
+                    properties: {
+                        startAt: info.actionCount
                     }
-                    // activatedEvent.modifierNumber = eventsHandler.functions.modifyEvent({
-                        //     eventName: selected.eventName,
-                        //     properties: {startAt: info.actionCount}
-                        // })
-                    // activatedEvent.startAt = info.actionCount
-                    // activatedEvent.duration = randomEvents.functions.computeDuration(theEvent)
-                    state.randomEvents.activatedEvents.push(activatedEvent)
-                    
-                    //theEvent.startAt = info.actionCount
-                    
-                    if (selected.instructionModifier){
-                        const activatedEvent2 = {
-                            modifierNumber: eventsHandler.functions.addModifier(selected.instructionModifier),
-                            startAt: activatedEvent.startAt,
-                            duration: activatedEvent.duration
-                        }
-                        state.randomEvents.activatedEvents.push(selected.instructionModifier)
-                    
-                        //TODO
-                        eventsHandler.functions.applyInstructionModifier(modifier)
-                    }
-                }
-            }
+                }, true)
+            })
         }
 
         return text
-    },
-    settings: [
-        {name:"proba", default:0.33},
-        {name:"startAt", default:1}
-    ],
+    }
 }
-
 
 eventsHandler.utils.eventsDic = {
-    randomEvent1: {
-        duration: 2,
-        visibleStart: {
-            text: "text displayed at the beginning of randomEvent1 if the last sentence ended.",
-            alternateText: "text displayed after the first line break of answer if the last sentence didn't end."
-        },
-        memory: {
-            text: "[Author's note: this is the description of randomEvent1.]",
-            position: 1    //fixed position
-        },
-        nextEvent: "event1Continuation"
-    },
-    event1Continuation: {
-        duration: 1,               //overwrite endAt ; more useful if the event doesn't have a fixed start
-        visibleStart: {
-            text: function(){
-                const roll = Math.random() * 3
-                if (roll < 1){
-                    return "event1Continuation starting text."
-                }else if (roll < 2){
-                    return "continuation alternate text."
-                }
-                return "continuation third text."
-            },
-            alternateText: function(){return eventsHandler.utils.eventsDic.event1Continuation.visibleStart.text()}
-        },
-        memory: {
-            text: "[Author's note: this is the description of the continuation.]",
-            cautious: true,
-            alternateText: "[Author's note: this is the description of the continuation.]"
-        },
-    },
-    secondRandomEvent: {
+    wish: {
         duration: 3,
-        visibleStart: function(){
-            possible = [
-                "secondEvent",
-                "alternate second event"
-            ]
-            return possible[Math.floor(Math.random() * possible.length)]
-        },
         memory: {
-            text: "[Author's note: this is the description of the secondEvent.]",
-            alternateText: function(){return eventsHandler.utils.eventsDic.secondRandomEvent.memory.text}
+            text: "[Author's note: the next paragraphs describes how your wish comes true.]",
+            position: -1,
+        },
+    },
+    hope: {
+        duration: 3,
+        memory: {
+            text: "[Author's note: your hope will soon come true! The next paragraphs describe how your hope comes true.]",
+            position: -1,
         },
     }
 }
-
-randomEvents.utils.eventsDic = {
-    randomEvent1: {
-        weight: 2,
-        eventName: "randomEvent1"
-    },
-    secondRandomEvent: {
-        name: "event 2",
-        weight: 1,
-        eventName: "secondRandomEvent"
-    }
-}
-//requires the commandHelper : https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/commandHandler/commandHelper.js
-
-commandHandler = {
-    name:"commandHandler",
-    // init:function(){
-    //   state.commandHandler.commandList = {},
-    //   state.commandHandler.aliasList = {}
-    // },
-    consume:function(input){
-      delete state.commandHandler.isExecutingCommand
-      delete state.commandHandler.currentCommand
-
-      const possibleTextStarts=[
-        {start: "", end: ""}, 
-        {start: "\n> You say \"", end: "\"\n"}, 
-        {start: "\n> You ", end: ".\n"}, 
-        {start: "\n", end: ""}
-      ]
-
-      currentStart = possibleTextStarts.find( 
-        (pts) => input.startsWith(pts.start + settings.commandHandler.prefix)
-      )
-
-      if (currentStart){
-        let consume = true
-        state.commandHandler.isExecutingCommand = true
-        try
-        {
-          //TODO: better handling of the end of the "do/say" than a substring...
-          consume = commandHelper.analyseAndExecuteCommand(
-            input.substring(currentStart.start.length + settings.commandHandler.prefix.length, 
-                            input.length - currentStart.end.length)
-          )
-        }
-        catch (error) 
-        {
-          state.message += `Error: ${error}\n`
-          state.message += `Your message: ${input}\n`
-          state.modules.queryAI = false
-          consume = true
-        }
-        
-        return consume
-      }
-      return false
-    },
-    input: function(input){
-      let modifiedInput = input
-      if (state.commandHandler) {
-        if (state.commandHandler.input) {
-          if (state.commandHandler.input in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.input].input) {
-            try {
-              modifiedInput = commandHelper.commandList[state.commandHandler.input].input(modifiedInput)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in input: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.input
-        delete state.commandHandler.inputArgs
-
-      }
-      return modifiedInput
-    },
-    context: function(context){
-      let modifiedContext = context
-      if (state.commandHandler) {
-        if (state.commandHandler.context) {
-          if (state.commandHandler.context in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.context].context) {
-            try {
-              modifiedContext = commandHelper.commandList[state.commandHandler.context].context(modifiedContext)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in context: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.context
-        delete state.commandHandler.contextArgs
-
-      }
-      return modifiedContext
-    },
-    output: function(output){
-      let modifiedOutput = output
-      if (state.commandHandler) {
-        if (state.commandHandler.output) {
-          if (state.commandHandler.output in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.output].output) {
-            try {
-              modifiedOutput = commandHelper.commandList[state.commandHandler.output].output(modifiedOutput)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in output: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.output
-        delete state.commandHandler.outputArgs
-
-      }
-      return modifiedOutput
-    },
-    queryContext: function(context){
-      let modifiedContext = context
-      if (state.commandHandler) {
-        if (state.commandHandler.context) {
-          if (state.commandHandler.context in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.context].context) {
-            try {
-              modifiedContext = commandHelper.commandList[state.commandHandler.context].context(context)
-            }
-            catch (error) {
-              state.message += `commandHandler: bug in context: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.context
-        delete state.commandHandler.contextArgs
-
-      }
-      return modifiedContext
-    },
-    getQuery: function(output){
-      let modifiedOutput = output
-      if (state.commandHandler){
-        if (state.commandHandler.output){
-          if (state.commandHandler.output in commandHelper.commandList
-              && commandHelper.commandList[state.commandHandler.output].output) {
-            try
-            {
-              modifiedOutput = commandHelper.commandList[state.commandHandler.context].context(context)
-            }
-            catch(error)
-            {
-              state.message += `commandHandler: bug in output: ${error}\n`
-            }
-          }
-        }
-
-        delete state.commandHandler.output
-        delete state.commandHandler.outputArgs
-
-      }
-      state.modules.forceOutput = modifiedOutput
-    },
-    settings:[{name:"prefix", default:"/"}, {name:"optionPrefix", default:"-"}],
-    info: {
-  		code: "https://github.com/myGat/AI-dungeon/tree/master/DevTool/modules/commandHandler",
-  		description: "A module that handle commands (add new commands in commandHelper.commandList"
-	  },
-    version:"0.1.4",
-    minVersion:"0.1.4",
-
-  }
-
-commandHelper = {
-    commandList: {
-        // requires at least listCommand (to send error messages)
-        listCommands: {
-            name: "listCommands",
-            description: 'display a list of available commands',
-            options: {c: "to make the ai continue the story"},
-            execute: function(args) {
-                if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-                    if (args[0].indexOf("c") >= 0){
-                        this.dontConsume = {input: "deleteInput"};
-                    }
-                }
-
-                let resultList=[]
-                const prefix = settings.commandHandler.prefix
-                for (const c in commandHelper.commandList){
-                  const command = commandHelper.commandList[c]
-                  if (command.hide || command.deactivate || !command.execute)
-                    {}
-                  else if (command.usage)
-                    {resultList.push(`${prefix}${c} ${command.usage}`)}
-                  else
-                    {resultList.push(`${prefix}${c}`)}
-                }//.forEach(c => resultList.append(prefix + c.name))
-                state.message += `List of commands: ${resultList.join(", ")}\n`; 
-            },
-        },
-        //utilitary for some commands with -c option
-        deleteInput: {
-            deactivate: true,
-            input: (input) => {return ""}
-        }
-    }, 
-    aliasList: {
-        lc  : { command:"listCommands"},
-    },
-    
-    analyseAndExecuteCommand: (text) => {
-        //TODO: not transform the text into list, so all functions in commadList can take a text as argument and return a text. 
-        const args = text.split(/ +/); // Create a list of the words provided.
-        const commandNameOrAlias = args.shift(); // Fetch and remove the actual command from the list.
-        //state.message += text
-
-        let consume = true 
-          
-        let commandName, command
-        if (commandNameOrAlias in commandHelper.commandList)
-        {
-          if (!commandHelper.commandList[commandNameOrAlias].deactivate
-              && commandHelper.commandList[commandNameOrAlias].execute){
-            commandName = commandNameOrAlias;
-            command = commandHelper.commandList[commandNameOrAlias];
-          }
-        } else if (commandNameOrAlias in commandHelper.aliasList) {
-          commandName = commandHelper.aliasList[commandNameOrAlias].command
-          if (commandHelper.commandList[commandName] 
-              && !commandHelper.commandList[commandName].deactivate
-              && commandHelper.commandList[commandName].execute){
-            command = commandHelper.commandList[commandName] 
-            if (commandHelper.aliasList[commandNameOrAlias].option) 
-              args.unshift(commandHelper.aliasList[commandNameOrAlias].option)
-          }
-        }
-    
-        if (!command) 
-        {
-            commandHelper.commandList.listCommands.execute()
-            throw `Invalid Command\nCommand ${settings.commandHandler.prefix}${commandNameOrAlias} do not exist.\n`;
-        } // Command is not in the list, lets exit early.
-    
-        let initArgs
-        if (!command.noredo)
-          initArgs = [...args] //args may be modified by the command... (maybe there's a better way?)
-            
-        command.execute(args);
-        state.commandHandler.currentCommand = commandName
-
-        if (command.forceOutput){
-          state.modules.forceOutput = command.forceOutput
-        }
-        if (command.dontConsume){
-          consume = false
-
-          state.commandHandler.input = command.dontConsume.input ?
-              command.dontConsume.input : commandName
-          if (command.dontConsume.inputArgs){
-            state.commandHandler.inputArgs = command.dontConsume.inputArgs
-          }
-    
-          state.commandHandler.context = command.dontConsume.context ?
-              command.dontConsume.context : commandName
-          if (command.dontConsume.contextArgs){
-            state.commandHandler.contextArgs = command.dontConsume.contextArgs
-          }
-
-          state.commandHandler.output = command.dontConsume.output ?
-              command.dontConsume.output : commandName
-          if (command.dontConsume.outputArgs){
-            state.commandHandler.outputArgs = command.dontConsume.outputArgs
-          }
-        }
-        else if (command.queryAI){
-          state.modules.queryAI = true
-
-          state.commandHandler.output = command.queryAI.output ?
-              command.queryAI.output : commandName
-          if (command.queryAI.outputArgs){
-            state.commandHandler.outputArgs = command.queryAI.outputArgs
-          }
-    
-          state.commandHandler.context = command.queryAI.context ?
-              command.queryAI.context : commandName
-          if (command.queryAI.contextArgs){
-            state.commandHandler.contextArgs = command.queryAI.contextArgs
-          }
-        }
-          
-        if (!command.noredo){
-          state.commandHandler.lastCommand = commandName
-          state.commandHandler.lastArgs = initArgs
-        }
-      return consume
-    }
-}
-
-commandHelper.commandList.help = {
-    name: "help",
-    description: 'help about a command.',
-    usage: 'commandName',
-    options: { c: "to make the ai continue the story" },
-    execute: function (args) {
-        const optionPrefix = settings.commandHandler.optionPrefix
-
-        if (args && args[0] && args[0].startsWith(optionPrefix)) {
-            options = args.shift();
-            if (options.indexOf("c") >= 0) {
-                this.dontConsume = { input: "deleteInput" };
-            }
-        }
-
-        const prefix = settings.commandHandler.prefix
-
-        if (!args || args.length == 0) {
-            throw `${prefix}help: no argument provided.`
-        }
-
-        const targetName = args[0].replace(prefix, "")
-        const command = commandHelper.commandList[targetName]
-        if (!command || command.deactivated) {
-            throw `${prefix}help: command ${prefix}${targetName} does not exist.`
-        }
-
-        let resultList = []
-        resultList.push(`help on ${prefix}${targetName}:`)
-        command.description ? resultList.push(`- description: ${command.description}`) : resultList.push(`- no description provided`)
-        command.usage ? resultList.push(`- usage: ${prefix}${targetName} ${command.usage}`) : resultList.push(`- usage: ${prefix}${targetName}`)
-        if (command.options) {
-            let optionList = []
-            for (const opt in command.options) {
-                optionList.push(`${optionPrefix}${opt} ${command.options[opt]}`)
-            }
-            resultList.push(`- option(s): ${optionList.join(" ; ")}`);
-        }
-        const aliases = []
-        for (const alias in commandHelper.aliasList) {
-            if (commandHelper.aliasList[alias].command == targetName) {
-                if (alias.option) {
-                    aliases.push(`${prefix}${alias} : ${prefix}${targetName} ${commandHelper.aliasList[alias].option}`)
-                } else {
-                    aliases.push(`${prefix}${alias} : ${prefix}${targetName}`)
-                }
-            }
-        }
-        if (aliases.length)
-            resultList.push(`- alias(es): ${aliases.join(" ; ")}`)
-        state.message += `${resultList.join("\n")}\n`;
-    },
-}
-
-commandHelper.aliasList.h  = { command:"help"}
-
-commandHelper.commandList.aliases = {
-    name: "aliases", 
-    description: 'List aliases for commands',
-    options: { c: "to make the ai continue the story" },
-    execute: function(args) {
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)) {
-            options = args.shift();
-            if (options.indexOf("c") >= 0) {
-                this.dontConsume = { input: "deleteInput" };
-            }
-        }
-
-        const prefix = settings.commandHandler.prefix
-        const aliases = commandHelper.aliasList
-        const commandList = commandHelper.commandList
-        
-        let resultList = []
-        for (const a in aliases) {
-            if (!commandList[aliases[a].command].hide && !commandList[aliases[a].command].deactivate) {
-                aliases[a].option ?
-                    resultList.push(`${prefix}${a} : ${prefix}${aliases[a].command} ${aliases[a].option}`) :
-                    resultList.push(`${prefix}${a} : ${prefix}${aliases[a].command}`)
-            }
-        }//.forEach(c => resultList.append(prefix + c.name))
-        state.message += `List of aliases: \n${resultList.join(", ")}\n`;
-    }
-}
-
-
-commandHelper.commandList.redo = {
-description: 'redo last command with same argument',
-noredo: true,  //if redoing a redo was allowed, it would remove the last commands info... x)
-    execute: function(args) {
-        const commandList = commandHelper.commandList
-
-        const command = commandList[state.lastCommand]
-        let text
-        if (command) {
-            text = command.execute(state.lastArgs)
-            if (command.dontConsume) {
-                this.dontConsume = {}
-
-                this.dontConsume.input =
-                    command.dontConsume.input ?
-                        command.dontConsume.input : commandName
-                if (command.dontConsume.inputArgs) {
-                    this.dontConsume.inputArgs = command.dontConsume.inputArgs
-                }
-
-                this.dontConsume.context =
-                    command.dontConsume.context ?
-                        command.dontConsume.context : commandName
-                if (command.dontConsume.contextArgs) {
-                    this.dontConsume.contextArgs = command.dontConsume.contextArgs
-                }
-
-                this.dontConsume.output =
-                    command.dontConsume.output ?
-                        command.dontConsume.output : commandName
-                if (command.dontConsume.outputArgs) {
-                    this.dontConsume.outputArgs = command.dontConsume.outputArgs
-                }
-            }else if (command.queryAI){
-                this.queryAI = {}
-
-                this.queryAI.context =
-                    command.queryAI.context ?
-                        command.queryAI.context : commandName
-                if (command.queryAI.contextArgs) {
-                    this.queryAI.contextArgs = command.queryAI.contextArgs
-                }
-
-                this.queryAI.output =
-                    command.queryAI.output ?
-                        command.queryAI.output : commandName
-                if (command.queryAI.outputArgs) {
-                    this.queryAI.outputArgs = command.queryAI.outputArgs
-                }
-
-            }
-        }else {
-            throw "nothing to redo.\n"
-        }
-    }
-}
-//require to set debugMode and debugVerbosity beforehand - see https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/debugCommands/debugMode.js
-
-commandHelper.commandList.execute = {
-    name: "execute", 
-    description: `Execute some javascript instructions. eg /execute state.message = "Hello world!". NB: don't start your javascript with "-", or it will be interpreted as an option of the "esecute" command.`,
-    usage: "javascriptInstruction", 
-    deactivate: !debugMode,
-    options: {
-        c: "to make the ai continue the story",
-        pi: "to create a permanent instruction executed each input phase",
-        pt: "to create a permanent instruction executed each context phase",
-        po: "to create a permanent instruction executed each output phase",
-        pito: "to create a permanent instruction executed each phase"
-    },
-    execute: function(args) {
-        let options
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-            options = args.shift();
-        }
-
-        if (!args || args.length == 0){
-            throw `${settings.commandHandler.prefix}execute: no argument provided.`
-        }
-
-        if (options){
-            if (options.indexOf("c") >= 0){
-                this.dontConsume = {input: "deleteInput"};
-            }
-            if (options.indexOf("p") >= 0){
-                const phases = []
-                if (options.indexOf("i") >= 0){
-                    phases.push("input")
-                }
-                if (options.indexOf("t") >= 0){
-                    phases.push("context")
-                }
-                if (options.indexOf("o") >= 0){
-                    phases.push("output")
-                }
-                if (phases.length == 0){
-                    throw `${settings.commandHandler.prefix}execute: p option requires at least the option i, t or o.`
-                }
-                state.debug.instructions.push({ text: args.join(" "), phases: phases })
-
-                if (debugVerbosity >= 1){
-                    state.message += `${args.join(" ")} added to phase ${phases.join(", ")}\n`; 
-                }
-                return
-            }
-        }
-
-        let instructions = args.join(" ")
-        Function('"use strict";' + instructions )();
-
-        if (debugVerbosity >= 1){
-            state.message += `${instructions} executed\n`; 
-        }
-    }
-}
-
-commandHelper.commandList.display = {
-    name: "display", 
-    description: `display a variable in message. eg /display state.memory.context\nUnfortunaztely I can't decide the timing of the display, so it's at the beginning of eact script.`,
-    usage: "variableName",
-    deactivate: !debugMode,
-    options: {
-        c: "to make the ai continue the story",
-        i: "display only during input phase",
-        t: "display only during context phase",
-        o: "display only during output phase"
-    },
-    execute: function(args) {
-        let phases = []
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-            options = args.shift();
-
-            if (options.indexOf("c") >= 0){
-                this.dontConsume = {input: "deleteInput"};
-            }
-
-            if (options.indexOf("i") >= 0){
-                phases.push("input")
-            }
-            if (options.indexOf("t") >= 0){
-                phases.push("context")
-            }
-            if (options.indexOf("o") >= 0){
-                phases.push("output")
-            }
-        }
-
-        if (!args || args.length == 0){
-            throw `${settings.commandHandler.prefix}${this.name}: no argument provided.`
-        }
-
-        if (phases.length == 0){
-            phases = ["input", "context", "output"]
-        }
-
-        const varPath = args.join(" ")
-        const body = "state.message += `" + varPath + ", ${phase} phase: ${JSON.stringify(" + varPath + ")}\\n`"
-        state.debug.instructions.push({ text: body, phases: phases })
-
-        if (debugVerbosity >= 1){
-            state.message += `${varPath} added in display\n`; 
-        }
-    }
-}
-
-commandHelper.commandList.debugTips = {
-    name: "debugTips", 
-    description: `display few debug tips`,
-    deactivate: !debugMode,
-    options: {
-        c: "to make the ai continue the story",
-    },
-    execute: function(args) {
-        let phases = []
-        if (args && args[0] && args[0].startsWith(settings.commandHandler.optionPrefix)){
-            options = args.shift();
-
-            if (options.indexOf("c") >= 0){
-                this.dontConsume = {input: "deleteInput"};
-            }
-        }
-
-        state.message += `Create a Hello world command:\n`
-        state.message += `/exe -pi commandHelper.commandList.hello = { execute: function(args) { state.message = "Hello world!" }}\n`
-        state.message += `Call your Hello world command:\n`
-        state.message += `/hello \n`
-        state.message += `Destroy your Hello world command:\n`
-        state.message += `/exe state.debug.instructions.splice(0,1)\n`
-        state.message += `There's no command to destroy a permanent debug instruction or a display command, but those are stored in state.debug.instructions; destroy them by manipulating the array as above.\n`
-    }
-}
-
-debug = {
-    name: "debug", 
-    // onEnd: true, //maybe I should activate this, so I have "process()" at the start of scripts and "input()/output()/context()" at the end ?
-    init: function(){
-		state.debug.instructions = []
-	}, 
-	functions: {
-		execute: function(phase){
-            for (const instruction of state.debug.instructions) {
-                if (instruction.phases.includes(phase)) {
-                    try {
-                        let evaluation = Function("phase", '"use strict";' + instruction.text)(phase);
-
-                        if (debugVerbosity >= 1){
-                            state.message += `${instruction.text} executed in ${phase}\n`; 
-                        }
-                    } catch (error) {
-                        state.message += `debug, phase ${phase}: cannot execute ${instruction.text}: ${error}\n`
-                    }
-                }
-            }
-        }
-	},
-	// consume: function(input){
-    //     this.functions.execute("input");
-    //     return false}, 
-    /*
-     * unfortunately this won't work: 
-     * only the module asking for a query is called
-     * have to find another way to output stuff during context and output :/
-	queryContext: function(context){
-        this.functions.execute("context");
-        return context
-    }, 
-	getQuery: function(output){
-        this.functions.execute("output");
-    }, 
-    */
-
-    /*
-     * for now, only process is activated.
-	input: function(input){
-        this.functions.execute("input");
-        return input
-    }, 
-	output: function(output){
-        this.functions.execute("output");
-        return output
-    }, 
-	context: function(context){
-        this.functions.execute("context");
-        return context
-    }, 
-    */
-	process: function(type){
-        this.functions.execute(type);
-    }, 
-	info: {
-		code: "https://github.com/myGat/AI-dungeon/blob/master/DevTool/modules/debugCommands/debug.js",
-		description: "A module for debug purpose, to execute some command from the story." 
-	},
-	version: "0.1.4", 
-	minVersion: "0.1.4" 
-}
-
-commandHelper.aliasList.exe = { command:"execute"} 
-// requires ../../utils.isNullOrWhiteSpace
-
-commandHelper.commandList.describe = {
-    name: "describe", 
-    description: "Try to force the AI to describe something by temporarily filling the frontMemory",
-    usage: 'text',
-    execute: function (args) {
-        if (!args || args.length == 0) {
-            throw `${settings.commandHandler.prefix}describe: no argument provided.`
-        }
-
-        if (!isNullOrWhiteSpace(state.memory.frontMemory)){
-          this.dontConsume.outputArgs = [state.memory.frontMemory]
-        }
-        const textToDisplay = args.join(' ');
-        state.memory.frontMemory = `[ Author's note: the following paragraphs describe ${textToDisplay}. The text is very descriptive about it. ]`;
-    },
-    dontConsume: {},
-    output: function(output){
-        if (state.commandHandler.outputArgs){
-          state.memory.frontMemory = state.commandHandler.outputArgs[0]
-        }else{
-            delete state.memory.frontMemory
-        }
-        //isNullOrWhitespace(text) ? delete state.memory.frontMemory : state.memory.frontMemory = textToDisplay;
-        return output
-    }
-}
-
-commandHelper.commandList.describePrompt = {
-    name: "describePrompt", 
-    description: 'Try to force the AI to describe something using a visible prompt',
-    usage: 'text',
-    noredo: true, //no need to redo it since the prompt stay
-    execute: function (args) {
-        if (!args || args.length == 0) {
-            throw `${settings.commandHandler.prefix}${this.name}: no argument provided.`
-        }
-
-        this.dontConsume.inputArgs = args;
-    },
-    dontConsume: {},
-    input: function(input){
-        return `\n> Describe ${state.commandHandler.inputArgs.join(' ')}`;
-    }
-}
-
-commandHelper.aliasList.d = { command:"describe"} 
-commandHelper.aliasList.dp = { command:"describePrompt"} 
 
 let settings = {
-  randomEvents: {proba: 0.5}
+  
 }
 
 let modules = [
   {name:"modules",init:function(){state.modules.initialized = true; state.modules.contextIsContinue = true}},
-  debug,
-  commandHandler,
   preciseMemory,
-  eventsHandler, 
-  randomEvents
+  eventsHandler,
+  wish
 ]
 
 
