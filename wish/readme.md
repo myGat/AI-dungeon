@@ -4,7 +4,7 @@ Basically, it adds "[Author's note: the next paragraphs describes how your wish 
 "[Author's note: your hope will soon come true! The next paragraphs describe how your hope comes true.]" 
 one line back during a few turns when the inputs contains "you wish" or "you hope".
 
-See it in work on AID: 
+See it in work on AID: https://play.aidungeon.io/main/scenarioView?publicId=98d6d2d0-30ed-11eb-ade4-a942381a29d1
 
 Uses modules (https://github.com/myGat/AI-dungeon/tree/master/DevTool/modules/base) (Devon's modules with slight modifications), 
 preciseMemory (https://github.com/myGat/AI-dungeon/tree/master/DevTool/modules/preciseMemory),
